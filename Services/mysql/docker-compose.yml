@@ -1,0 +1,28 @@
+version: '3.8'
+
+networks:
+  dev-network:
+    external: true
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql8-dev
+    restart: unless-stopped
+    networks:
+      - dev-network
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: app_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpass
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    command: --default-authentication-plugin=mysql_native_password
+
+volumes:
+  mysql_data:
+    driver: local

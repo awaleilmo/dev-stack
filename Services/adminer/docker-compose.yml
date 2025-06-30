@@ -1,0 +1,15 @@
+version: '3.8'
+
+networks:
+  dev-network:
+    external: true
+
+services:
+  adminer:
+    image: adminer:latest
+    container_name: adminer-dev
+    restart: unless-stopped
+    networks:
+      - dev-network
+    ports:
+      - "8081:8080"

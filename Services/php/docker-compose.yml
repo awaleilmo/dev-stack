@@ -1,0 +1,35 @@
+version: '3.8'
+
+networks:
+  dev-network:
+    external: true
+
+services:
+  frankenphp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: frankenphp-dev
+    restart: unless-stopped
+    networks:
+      - dev-network
+    volumes:
+      - /:/host  # Mount entire filesystem for global access
+      - ~/.composer:/root/.composer
+      - ./config/php.ini:/usr/local/etc/php/conf.d/99-custom.ini
+    environment:
+      - TZ=Asia/Jakarta
+      - SERVER_NAME=:8080
+    ports:
+      - "8080:8080"  # HTTP
+      - "8443:8443"  # HTTPS
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    tty: true
+    stdin_open: true
+    privileged: true
+    command: ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]

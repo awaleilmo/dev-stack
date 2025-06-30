@@ -1,0 +1,21 @@
+version: '3.8'
+
+networks:
+  dev-network:
+    external: true
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: redis-dev
+    restart: unless-stopped
+    networks:
+      - dev-network
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
+    driver: local

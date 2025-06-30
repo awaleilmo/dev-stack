@@ -1,0 +1,26 @@
+# Docker Development Toolkit - Copy and paste into your ~/.bashrc
+
+# Core Development Commands
+alias php='docker exec -it -w "/host${PWD}" frankenphp-dev php'
+alias composer='docker exec -it -w "/host${PWD}" frankenphp-dev composer'
+alias artisan='docker exec -it -w "/host${PWD}" frankenphp-dev php artisan'
+alias franken='docker exec -it frankenphp-dev bash'
+alias franken-here='docker exec -it -w "/host${PWD}" frankenphp-dev bash'
+
+# Laravel Shortcuts
+alias migrate='php artisan migrate'
+alias seed='php artisan db:seed'
+alias fresh='php artisan migrate:fresh --seed'
+alias tinker='php artisan tinker'
+alias serve='php artisan serve'
+
+# Database Connections
+alias mysql-connect='docker exec -it mysql8-dev mysql -u user -puserpass app_db'
+alias mysql-root='docker exec -it mysql8-dev mysql -u root -prootpass'
+alias postgres-connect='docker exec -it postgres15-dev psql -U pguser -d app_pgdb'
+alias redis-cli='docker exec -it redis-dev redis-cli'
+
+# Quick Web Access
+alias open-app='xdg-open http://localhost:8080 2>/dev/null || echo "Open http://localhost:8080"'
+alias open-adminer='xdg-open http://localhost:8081 2>/dev/null || echo "Open http://localhost:8081"'
+alias open-mailhog='xdg-open http://localhost:8025 2>/dev/null || echo "Open http://localhost:8025"'
