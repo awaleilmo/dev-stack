@@ -1,0 +1,32 @@
+version: '3.8'
+
+networks:
+  dev-network:
+    external: true
+
+services:
+  nodejs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nodejs-dev
+    restart: unless-stopped
+    networks:
+      - dev-network
+    volumes:
+      - /:/host  # Mount entire filesystem for global access
+      - ~/.npm:/root/.npm
+      - ~/.yarn:/root/.yarn
+      - ~/.config/yarn:/root/.config/yarn
+    environment:
+      - TZ=${TZ:-Asia/Jakarta}
+      - NODE_ENV=${NODE_ENV:-development}
+    ports:
+      - "${NODE_PORT:-3000}:3000"        # React, Next.js default
+      - "${NODE_PORT_ALT:-3001}:3001"    # Alternative port
+      - "${ANGULAR_PORT:-4200}:4200"     # Angular default
+      - "${VITE_PORT:-5173}:5173"        # Vite default
+      - "${WEBPACK_PORT:-8080}:8080"     # Webpack dev server
+    tty: true
+    stdin_open: true
+    working_dir: /workspace
