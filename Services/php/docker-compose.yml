@@ -18,11 +18,11 @@ services:
       - ~/.composer:/root/.composer
       - ./config/php.ini:/usr/local/etc/php/conf.d/99-custom.ini
     environment:
-      - TZ=Asia/Jakarta
-      - SERVER_NAME=:8080
+      - TZ=${TZ:-Asia/Jakarta}
+      - SERVER_NAME=:${FRANKENPHP_HTTP_PORT:-8080}
     ports:
-      - "8080:8080"  # HTTP
-      - "8443:8443"  # HTTPS
+      - "${FRANKENPHP_HTTP_PORT:-8080}:8080"  # HTTP
+      - "${FRANKENPHP_HTTPS_PORT:-8443}:8443"  # HTTPS
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080"]
       interval: 30s

@@ -15,7 +15,7 @@ Simple, manual Docker development environment with global PHP/Composer access. N
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/dev-stack.git ~/dev-stack
+git clone https://github.com/awaleilmo/dev-stack.git ~/dev-stack
 cd ~/dev-stack
 ```
 
@@ -28,12 +28,17 @@ docker network create dev-network
 ### 3. Start Services
 
 ```bash
-# Full stack (all services)
-cd stacks/
-docker-compose -f full-stack.yml up -d
+# PHP only
+cd services/php/
+docker-compose up -d
 
-# OR PHP + MySQL only
-docker-compose -f php-mysql.yml up -d
+# MySQL only  
+cd ../mysql/
+docker-compose up -d
+
+# Adminer for database management
+cd ../adminer/
+docker-compose up -d
 ```
 
 ### 4. Add Aliases (Copy-Paste)
@@ -79,33 +84,9 @@ dev-stack/
     └── zshrc-snippet.txt
 ```
 
-## 🎛️ Service Options
+## 🎛️ Service Management
 
-### Option 1: Full Stack
-
-Everything included:
-
-```bash
-cd stacks/
-docker-compose -f full-stack.yml up -d
-```
-
-**Includes:** PHP, MySQL, PostgreSQL, Redis, Adminer, MailHog
-
-### Option 2: PHP + MySQL
-
-Most common setup:
-
-```bash
-cd stacks/  
-docker-compose -f php-mysql.yml up -d
-```
-
-**Includes:** PHP, MySQL, Adminer
-
-### Option 3: Individual Services
-
-Pick exactly what you need:
+### Starting Individual Services
 
 ```bash
 # Start PHP
@@ -116,9 +97,36 @@ docker-compose up -d
 cd ../mysql/
 docker-compose up -d
 
-# Start Adminer
+# Start Adminer (database manager)
 cd ../adminer/
 docker-compose up -d
+
+# Start PostgreSQL
+cd ../postgres/
+docker-compose up -d
+
+# Start Node.js
+cd ../nodejs/
+docker-compose up -d
+
+# Start Redis
+cd ../redis/
+docker-compose up -d
+
+# Start MailHog (email testing)
+cd ../mailhog/
+docker-compose up -d
+```
+
+### Stopping Services
+
+```bash
+# Stop specific service
+cd services/php/
+docker-compose down
+
+# Stop all containers
+docker stop $(docker ps -q)
 ```
 
 ## 🗄️ Database Information
@@ -129,11 +137,14 @@ docker-compose up -d
 | PostgreSQL | localhost | 5432 | pguser | pgpass | app_pgdb |
 | Redis | localhost | 6379 | - | - | - |
 
-## 🌐 Web Interfaces
+## 🌐 Web Interfaces & Ports
 
-- **Application**: http://localhost:8080
+- **FrankenPHP**: http://localhost:8080
 - **Adminer (Database)**: http://localhost:8081  
 - **MailHog (Email)**: http://localhost:8025
+- **Node.js Apps**: http://localhost:3000 (React/Next.js)
+- **Angular Apps**: http://localhost:4200
+- **Vite Apps**: http://localhost:5173
 
 ## 💻 Available Commands
 
@@ -144,6 +155,18 @@ After adding aliases, these work from **any directory**:
 php -v                    # PHP version
 composer install          # Install dependencies
 artisan migrate           # Laravel artisan
+
+# Node.js commands
+node -v                   # Node.js version
+npm install               # Install packages
+yarn dev                  # Run development server
+npm run build             # Build for production
+
+# Frontend framework commands
+vue create my-app         # Create Vue.js app
+ng new my-app            # Create Angular app
+npx create-react-app my-app # Create React app
+npx create-vite my-app   # Create Vite app
 
 # Laravel shortcuts  
 migrate                   # php artisan migrate
@@ -177,13 +200,37 @@ migrate
 serve
 ```
 
-### Symfony Project
+### Vue.js Project
 
 ```bash
-cd ~/my-symfony-project
-composer install
-php bin/console doctrine:migrations:migrate
-php -S localhost:8000 -t public/
+cd ~/my-vue-project
+npm install               # Install Node.js dependencies
+npm run dev              # Start dev server (http://localhost:3000)
+
+# If using PHP backend
+composer install         # Install PHP dependencies
+php artisan serve        # Start API server (http://localhost:8000)
+```
+
+### React Project
+
+```bash
+cd ~/my-react-project
+npm install
+npm start                # Runs on http://localhost:3000
+
+# Or with Vite
+npm run dev              # Runs on http://localhost:5173
+```
+
+### Laravel + Vue/React
+
+```bash
+cd ~/my-laravel-app
+composer install         # PHP dependencies
+npm install              # Node.js dependencies  
+npm run dev              # Build assets
+php artisan serve        # Start Laravel
 ```
 
 ### Any PHP Project
@@ -234,16 +281,15 @@ docker-compose up -d --build
 ### Start/Stop Services
 
 ```bash
-# Start full stack
-cd stacks/
-docker-compose -f full-stack.yml up -d
-
-# Stop full stack
-docker-compose -f full-stack.yml down
-
-# Individual service
+# Start individual services
 cd services/php/
 docker-compose up -d
+
+cd services/mysql/
+docker-compose up -d
+
+# Stop individual services
+cd services/php/
 docker-compose down
 ```
 

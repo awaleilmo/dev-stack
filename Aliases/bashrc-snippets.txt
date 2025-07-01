@@ -7,12 +7,35 @@ alias artisan='docker exec -it -w "/host${PWD}" frankenphp-dev php artisan'
 alias franken='docker exec -it frankenphp-dev bash'
 alias franken-here='docker exec -it -w "/host${PWD}" frankenphp-dev bash'
 
+# Node.js Development Commands
+alias node='docker exec -it -w "/host${PWD}" nodejs-dev node'
+alias npm='docker exec -it -w "/host${PWD}" nodejs-dev npm'
+alias yarn='docker exec -it -w "/host${PWD}" nodejs-dev yarn'
+alias pnpm='docker exec -it -w "/host${PWD}" nodejs-dev pnpm'
+alias npx='docker exec -it -w "/host${PWD}" nodejs-dev npx'
+alias nodejs-shell='docker exec -it -w "/host${PWD}" nodejs-dev bash'
+
+# Frontend Framework Commands
+alias vue='docker exec -it -w "/host${PWD}" nodejs-dev vue'
+alias ng='docker exec -it -w "/host${PWD}" nodejs-dev ng'
+alias create-react-app='docker exec -it -w "/host${PWD}" nodejs-dev create-react-app'
+alias vite='docker exec -it -w "/host${PWD}" nodejs-dev vite'
+
 # Laravel Shortcuts
 alias migrate='php artisan migrate'
 alias seed='php artisan db:seed'
 alias fresh='php artisan migrate:fresh --seed'
 alias tinker='php artisan tinker'
 alias serve='php artisan serve'
+
+# Frontend Shortcuts
+alias npm-install='npm install'
+alias npm-dev='npm run dev'
+alias npm-build='npm run build'
+alias npm-watch='npm run watch'
+alias yarn-install='yarn install'
+alias yarn-dev='yarn dev'
+alias yarn-build='yarn build'
 
 # Database Connections
 alias mysql-connect='docker exec -it mysql8-dev mysql -u user -puserpass app_db'
@@ -24,3 +47,4 @@ alias redis-cli='docker exec -it redis-dev redis-cli'
 alias open-app='xdg-open http://localhost:8080 2>/dev/null || echo "Open http://localhost:8080"'
 alias open-adminer='xdg-open http://localhost:8081 2>/dev/null || echo "Open http://localhost:8081"'
 alias open-mailhog='xdg-open http://localhost:8025 2>/dev/null || echo "Open http://localhost:8025"'
+alias open-node='xdg-open http://localhost:3000 2>/dev/null || echo "Open http://localhost:3000"'

@@ -12,4 +12,4 @@ services:
     networks:
       - dev-network
     ports:
-      - "8081:8080"
+      - "${ADMINER_PORT:-8081}:8080"
