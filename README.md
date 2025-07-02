@@ -75,13 +75,10 @@ dev-stack/
 │   ├── redis/            # Redis 7
 │   ├── adminer/          # Database manager
 │   └── mailhog/          # Email testing
-├── stacks/               # Combined stacks
-│   ├── full-stack.yml    # All services
-│   ├── php-mysql.yml     # PHP + MySQL + Adminer
-│   └── php-postgres.yml  # PHP + PostgreSQL + Adminer
+│   ├── portainer/        # Docker WebUI
+│   ├── minio/            # S3 storage
 └── aliases/              # Copy-paste aliases
     ├── bashrc-snippet.txt
-    └── zshrc-snippet.txt
 ```
 
 ## 🎛️ Service Management
@@ -325,8 +322,7 @@ docker-compose up -d --build
 
 ## 📖 Documentation
 
-- [Manual Setup Guide](docs/MANUAL-SETUP.md) - Detailed setup instructions
-- [Usage Guide](docs/USAGE.md) - Complete usage examples
+- [Manual Setup Guide](docs/Manual-Setup.md) - Detailed setup instructions
 
 ## 🤝 Contributing
 

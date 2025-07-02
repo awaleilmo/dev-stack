@@ -1,0 +1,31 @@
+version: '3.8'
+
+networks:
+  dev-network:
+    external: true
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer-dev
+    restart: unless-stopped
+    networks:
+      - dev-network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    ports:
+      - "${PORTAINER_PORT:-9000}:9000"
+    command: --admin-password-file /tmp/portainer_password
+    environment:
+      - TZ=${TZ:-Asia/Jakarta}
+    # Create default admin password
+    entrypoint: |
+      sh -c '
+        echo "admin" > /tmp/portainer_password
+        /portainer --admin-password-file /tmp/portainer_password
+      '
+
+volumes:
+  portainer_data:
+    driver: local
