@@ -15,24 +15,11 @@ alias pnpm='docker exec -it -w "/host${PWD}" nodejs-dev pnpm'
 alias npx='docker exec -it -w "/host${PWD}" nodejs-dev npx'
 alias nodejs-shell='docker exec -it -w "/host${PWD}" nodejs-dev bash'
 
-# Frontend Framework Commands
-alias vue='docker exec -it -w "/host${PWD}" nodejs-dev vue'
-alias ng='docker exec -it -w "/host${PWD}" nodejs-dev ng'
-alias create-react-app='docker exec -it -w "/host${PWD}" nodejs-dev create-react-app'
-alias vite='docker exec -it -w "/host${PWD}" nodejs-dev vite'
-
-# Laravel Shortcuts
-alias migrate='php artisan migrate'
-alias seed='php artisan db:seed'
-alias fresh='php artisan migrate:fresh --seed'
-alias tinker='php artisan tinker'
-alias serve='php artisan serve'
-
-# Frontend Shortcuts
+# Frontend Shortcuts (install tools on-demand)
 alias npm-install='npm install'
 alias npm-dev='npm run dev'
 alias npm-build='npm run build'
-alias npm-watch='npm run watch'
+alias npm-start='npm start'
 alias yarn-install='yarn install'
 alias yarn-dev='yarn dev'
 alias yarn-build='yarn build'
@@ -47,4 +34,5 @@ alias redis-cli='docker exec -it redis-dev redis-cli'
 alias open-app='xdg-open http://localhost:8080 2>/dev/null || echo "Open http://localhost:8080"'
 alias open-adminer='xdg-open http://localhost:8081 2>/dev/null || echo "Open http://localhost:8081"'
 alias open-mailhog='xdg-open http://localhost:8025 2>/dev/null || echo "Open http://localhost:8025"'
-alias open-node='xdg-open http://localhost:3000 2>/dev/null || echo "Open http://localhost:3000"'
+alias open-portainer='xdg-open http://localhost:9000 2>/dev/null || echo "Open http://localhost:9000"'
+alias open-minio='xdg-open http://localhost:9002 2>/dev/null || echo "Open http://localhost:9002"'

@@ -116,6 +116,14 @@ docker-compose up -d
 # Start MailHog (email testing)
 cd ../mailhog/
 docker-compose up -d
+
+# Start Portainer (Docker UI)
+cd ../portainer/
+docker-compose up -d
+
+# Start MinIO (S3 storage)
+cd ../minio/
+docker-compose up -d
 ```
 
 ### Stopping Services
@@ -136,15 +144,16 @@ docker stop $(docker ps -q)
 | MySQL | localhost | 3306 | user | userpass | app_db |
 | PostgreSQL | localhost | 5432 | pguser | pgpass | app_pgdb |
 | Redis | localhost | 6379 | - | - | - |
+| MinIO | localhost | 9001 | admin | password123 | - |
 
-## 🌐 Web Interfaces & Ports
+## 🌐 Web Interfaces
 
 - **FrankenPHP**: http://localhost:8080
 - **Adminer (Database)**: http://localhost:8081  
 - **MailHog (Email)**: http://localhost:8025
-- **Node.js Apps**: http://localhost:3000 (React/Next.js)
-- **Angular Apps**: http://localhost:4200
-- **Vite Apps**: http://localhost:5173
+- **Portainer (Docker UI)**: http://localhost:9000 (admin/admin)
+- **MinIO Console (S3 Storage)**: http://localhost:9002 (admin/password123)
+- **Node.js Apps**: Use port from your project (e.g., 3000, 4200, 5173)
 
 ## 💻 Available Commands
 
@@ -162,11 +171,10 @@ npm install               # Install packages
 yarn dev                  # Run development server
 npm run build             # Build for production
 
-# Frontend framework commands
-vue create my-app         # Create Vue.js app
-ng new my-app            # Create Angular app
-npx create-react-app my-app # Create React app
-npx create-vite my-app   # Create Vite app
+# Install tools on-demand
+npm install -g @vue/cli   # Vue CLI
+npm install -g vite       # Vite
+npx create-react-app my-app # React app
 
 # Laravel shortcuts  
 migrate                   # php artisan migrate
