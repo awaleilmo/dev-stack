@@ -16,7 +16,6 @@ services:
       - portainer_data:/data
     ports:
       - "${PORTAINER_PORT:-9000}:9000"
-    command: --admin-password-file /tmp/portainer_password
     environment:
       - TZ=${TZ:-Asia/Jakarta}
 
