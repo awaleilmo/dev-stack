@@ -21,12 +21,6 @@ services:
     environment:
       - TZ=${TZ:-Asia/Jakarta}
       - NODE_ENV=${NODE_ENV:-development}
-    ports:
-      - "${NODE_PORT:-3000}:3000"        # React, Next.js default
-      - "${NODE_PORT_ALT:-3001}:3001"    # Alternative port
-      - "${ANGULAR_PORT:-4200}:4200"     # Angular default
-      - "${VITE_PORT:-5173}:5173"        # Vite default
-      - "${WEBPACK_PORT:-8080}:8080"     # Webpack dev server
     tty: true
     stdin_open: true
     working_dir: /workspace

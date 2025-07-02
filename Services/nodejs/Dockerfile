@@ -14,23 +14,25 @@ RUN apk add --no-cache \
     g++ \
     && rm -rf /var/cache/apk/*
 
-# Install global packages
-RUN npm install -g \
-    @vue/cli \
-    @angular/cli \
-    create-react-app \
-    vite \
-    webpack \
-    webpack-cli \
-    typescript \
-    ts-node \
-    nodemon \
-    pm2 \
-    yarn \
-    pnpm \
-    eslint \
-    prettier \
-    && npm cache clean --force
+# Install global packages (without yarn since it's already included)
+# RUN npm install -g \
+#     @vue/cli@latest \
+#     @angular/cli \
+#     create-react-app \
+#     vite \
+#     webpack \
+#     webpack-cli \
+#     typescript \
+#     ts-node \
+#     nodemon \
+#     pm2 \
+#     pnpm \
+#     eslint \
+#     prettier \
+#     && npm cache clean --force
+
+# Install/update yarn separately to avoid conflicts
+# RUN corepack enable && corepack prepare yarn@stable --activate
 
 # Set working directory
 WORKDIR /workspace
