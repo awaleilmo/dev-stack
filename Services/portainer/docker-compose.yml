@@ -19,12 +19,6 @@ services:
     command: --admin-password-file /tmp/portainer_password
     environment:
       - TZ=${TZ:-Asia/Jakarta}
-    # Create default admin password
-    entrypoint: |
-      sh -c '
-        echo "admin" > /tmp/portainer_password
-        /portainer --admin-password-file /tmp/portainer_password
-      '
 
 volumes:
   portainer_data:
