@@ -13,6 +13,9 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     unzip \
     wget \
+    nano \
+    vim \
+    default-mysql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Configure and install PHP extensions (simplified)
@@ -26,11 +29,15 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         zip \
         bcmath \
         opcache \
-        sockets
+        sockets \
+        exif
 
 # Install Composer globally
 RUN curl -sS https://getcomposer.org/installer | php -- \
     --install-dir=/usr/local/bin --filename=composer
+
+# Copy custom Caddy configuration
+COPY config/Caddyfile /etc/caddy/Caddyfile
 
 # Set working directory
 WORKDIR /app
@@ -39,7 +46,7 @@ WORKDIR /app
 RUN mkdir -p /app/public && echo '<?php phpinfo(); ?>' > /app/public/index.php
 
 # Expose ports
-EXPOSE 8080 8443
+EXPOSE 8080 8000
 
 # Default command
-CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
+CMD ["frankenphp", "run"]

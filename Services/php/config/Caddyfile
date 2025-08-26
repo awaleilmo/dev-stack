@@ -1,0 +1,28 @@
+# services/php/config/Caddyfile
+{
+    http_port 8080
+    auto_https off
+}
+
+localhost:8080 {
+    root * /app/public
+    php_frankenphp
+    file_server
+
+    # Laravel specific routing
+    try_files {path} {path}/ /index.php?{query}
+
+    # PHP handling
+    @php path *.php
+    handle @php {
+        php_frankenphp
+    }
+}
+
+# Additional virtual hosts untuk development
+*.test:8080 {
+    root * /app/public
+    php_frankenphp
+    file_server
+    try_files {path} {path}/ /index.php?{query}
+}

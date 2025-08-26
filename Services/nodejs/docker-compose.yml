@@ -14,13 +14,19 @@ services:
     networks:
       - dev-network
     volumes:
-      - /:/host  # Mount entire filesystem for global access
+      - ${HOST_PROJECT_PATH}:/workspace  # Mount entire filesystem for global access
       - ~/.npm:/root/.npm
       - ~/.yarn:/root/.yarn
       - ~/.config/yarn:/root/.config/yarn
     environment:
       - TZ=${TZ:-Asia/Jakarta}
       - NODE_ENV=${NODE_ENV:-development}
+      - VITE_HOST=0.0.0.0
+      - CHOKIDAR_USEPOLLING=true  # Untuk file watching
+      - WATCHPACK_POLLING=true  # Additional polling
+    ports:
+      - "5173:5173"  # Vite
+      - "3000:3000"  # Optional: for other frameworks
     tty: true
     stdin_open: true
     working_dir: /workspace
