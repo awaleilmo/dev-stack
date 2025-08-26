@@ -14,7 +14,7 @@ services:
     networks:
       - dev-network
     volumes:
-      - ${HOST_PROJECT_PATH}:/app  # Mount entire filesystem for global access
+      - /:/host # Mount entire filesystem for global access
       - ~/.composer:/root/.composer
       - ./config/php.ini:/usr/local/etc/php/conf.d/99-custom.ini
       - ./config/Caddyfile:/etc/caddy/Caddyfile

@@ -14,7 +14,7 @@ services:
     networks:
       - dev-network
     volumes:
-      - ${HOST_PROJECT_PATH}:/workspace  # Mount entire filesystem for global access
+      - /:/host  # Mount entire filesystem for global access
       - ~/.npm:/root/.npm
       - ~/.yarn:/root/.yarn
       - ~/.config/yarn:/root/.config/yarn
