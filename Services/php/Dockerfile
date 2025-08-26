@@ -46,7 +46,7 @@ WORKDIR /app
 RUN mkdir -p /app/public && echo '<?php phpinfo(); ?>' > /app/public/index.php
 
 # Expose ports
-EXPOSE 8080 8000
+EXPOSE 8080 8000 8443 8090
 
 # Default command
 CMD ["frankenphp", "run"]
