@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y \
     default-mysql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Configure and install PHP extensions (simplified)
+# Configure and install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
         gd \
@@ -34,7 +34,13 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
 
 # Install Composer globally
 RUN curl -sS https://getcomposer.org/installer | php -- \
-    --install-dir=/usr/local/bin --filename=composer
+    --install-dir=/usr/local/bin \
+    --filename=composer \
+    --version=latest \
+    && chmod +x /usr/local/bin/composer
+
+# Verify Composer installation
+RUN composer --version
 
 # Copy custom Caddy configuration
 COPY config/Caddyfile /etc/caddy/Caddyfile
