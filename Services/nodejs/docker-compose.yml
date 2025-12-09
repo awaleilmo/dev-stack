@@ -11,10 +11,9 @@ services:
       dockerfile: Dockerfile
     container_name: nodejs-dev
     restart: unless-stopped
-    networks:
-      - dev-network
+    network_mode: "host"
     volumes:
-      - /:/host  # Mount entire filesystem for global access
+      - /:/host
       - ~/.npm:/root/.npm
       - ~/.yarn:/root/.yarn
       - ~/.config/yarn:/root/.config/yarn
@@ -22,11 +21,8 @@ services:
       - TZ=${TZ:-Asia/Jakarta}
       - NODE_ENV=${NODE_ENV:-development}
       - VITE_HOST=0.0.0.0
-      - CHOKIDAR_USEPOLLING=true  # Untuk file watching
-      - WATCHPACK_POLLING=true  # Additional polling
-    ports:
-      - "5173:5173"  # Vite
-      - "3000:3000"  # Optional: for other frameworks
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
     tty: true
     stdin_open: true
     working_dir: /workspace
