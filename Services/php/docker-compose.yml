@@ -10,8 +10,6 @@ services:
     container_name: frankenphp-dev
     restart: unless-stopped
     network_mode: "host"
-    networks:
-      - dev-network
     volumes:
       - /:/host # Mount entire filesystem for global access
       - ~/.composer:/root/.composer # Composer cache persistence
