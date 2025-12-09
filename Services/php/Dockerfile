@@ -32,11 +32,10 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         sockets \
         exif
 
-# Install Composer globally
+# Install Composer globally (latest stable version)
 RUN curl -sS https://getcomposer.org/installer | php -- \
     --install-dir=/usr/local/bin \
     --filename=composer \
-    --version=latest \
     && chmod +x /usr/local/bin/composer
 
 # Verify Composer installation
