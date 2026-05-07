@@ -1,0 +1,27 @@
+version: '3.8'
+
+networks:
+  dev-network:
+    external: true
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb-dev
+    restart: unless-stopped
+    networks:
+      - dev-network
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER:-mongouser}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-mongopass}
+      MONGO_INITDB_DATABASE: ${MONGODB_DATABASE:-app_mongo}
+    volumes:
+      - mongodb_data:/data/db
+      - ./init:/docker-entrypoint-initdb.d
+    ports:
+      - "${MONGODB_PORT:-27017}:27017"
+    command: ["--auth"]
+
+volumes:
+  mongodb_data:
+    driver: local
