@@ -47,7 +47,7 @@ dev-stack/
 ├── lib/
 │   ├── config.sh         # Configuration defaults
 │   ├── detect.sh         # System detection
-│   ├─�� ui.sh             # UI utilities
+│   ├── ui.sh             # UI utilities
 │   ├── menu.sh           # Interactive menu
 │   ├── services.sh       # Service registry
 │   └── guides.sh         # Installation guides
