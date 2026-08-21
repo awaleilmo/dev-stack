@@ -14,7 +14,9 @@ declare -A SERVICE_CONTAINER=(
     [mongodb]=mongodb-dev
     [redis]=redis-dev
     [adminer]=adminer-dev
-    [mailhog]=mailhog-dev
+    [mailpit]=mailpit-dev
+    [rabbitmq]=rabbitmq-dev
+    [meilisearch]=meilisearch-dev
     [minio]=minio-dev
     [portainer]=portainer-dev
 )
@@ -25,7 +27,9 @@ declare -A SERVICE_IMAGE=(
     [mongodb]=mongo:7.0
     [redis]=redis:7-alpine
     [adminer]=adminer:latest
-    [mailhog]=mailhog/mailhog:latest
+    [mailpit]=axllent/mailpit:latest
+    [rabbitmq]=rabbitmq:3-management-alpine
+    [meilisearch]=getmeili/meilisearch:latest
     [minio]=minio/minio:latest
     [portainer]=portainer/portainer-ce:latest
 )
@@ -36,7 +40,9 @@ declare -A SERVICE_PORT=(
     [mongodb]=27017
     [redis]=6379
     [adminer]=8081
-    [mailhog]=8025
+    [mailpit]=8026
+    [rabbitmq]=15672
+    [meilisearch]=7700
     [minio]=9001
     [portainer]=9000
 )
@@ -47,7 +53,9 @@ declare -A SERVICE_DIR=(
     [mongodb]=services/mongodb
     [redis]=services/redis
     [adminer]=services/adminer
-    [mailhog]=services/mailhog
+    [mailpit]=services/mailpit
+    [rabbitmq]=services/rabbitmq
+    [meilisearch]=services/meilisearch
     [minio]=services/minio
     [portainer]=services/portainer
 )
@@ -58,7 +66,9 @@ declare -A SERVICE_CATEGORY=(
     [mongodb]=database
     [redis]=cache
     [adminer]=tool
-    [mailhog]=tool
+    [mailpit]=tool
+    [rabbitmq]=queue
+    [meilisearch]=search
     [minio]=storage
     [portainer]=tool
 )
@@ -69,13 +79,15 @@ declare -A SERVICE_LABEL=(
     [mongodb]=MongoDB
     [redis]=Redis
     [adminer]=Adminer
-    [mailhog]=MailHog
+    [mailpit]=Mailpit
+    [rabbitmq]=RabbitMQ
+    [meilisearch]=Meilisearch
     [minio]=MinIO
     [portainer]=Portainer
 )
 
 # Service order for display
-SERVICE_ORDER=(mysql postgres mongodb redis adminer mailhog minio portainer)
+SERVICE_ORDER=(mysql postgres mongodb redis adminer mailpit rabbitmq meilisearch minio portainer)
 
 # Get current working directory
 get_devstack_dir() {

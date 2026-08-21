@@ -67,7 +67,7 @@ show_main_menu() {
     echo -e "  ${VB} [E] Install PHP Extensions${NC} - Pasang ekstensi PHP via pecl (butuh PHP aktif)"
     echo -e "  ${VB} [V] Verify System${NC}          - Tampilkan status lengkap sistem & runtime"
     echo ""
-    echo -ne "  ${BOLD}Select service [1-8] or action [0-9/U/A/S/G/I/E/V/Q]:${NC} "
+    echo -ne "  ${BOLD}Select service [1-10] or action [0-9/U/A/S/G/I/E/V/Q]:${NC} "
 }
 
 # Show service submenu

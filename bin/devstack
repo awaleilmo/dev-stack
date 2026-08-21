@@ -33,6 +33,32 @@ if [[ -f ".env" ]]; then
     set -a
     source ".env"
     set +a
+    echo -e "  ${GREEN}✅${NC} .env loaded from $(pwd)/.env"
+else
+    # .env belum ada — tampilkan instruksi & hentikan CLI
+    echo -e "  ${RED}❌${NC} .env tidak ditemukan!"
+    echo ""
+    echo "  📄 File konfigurasi $(pwd)/.env belum tersedia."
+    echo ""
+    echo "  Langkah yang harus dilakukan:"
+    echo ""
+    echo "  1. Salin file contoh:"
+    echo "       cp .env.example .env"
+    echo ""
+    echo "  2. Edit .env sesuai kebutuhan:"
+    echo "     - Ubah port jika ada konflik (MYSQL_PORT, POSTGRES_PORT, dll.)"
+    echo "     - Ganti password database (MYSQL_ROOT_PASSWORD, POSTGRES_PASSWORD, MONGODB_PASSWORD)"
+    echo "     - Sesuaikan credentials MinIO & RabbitMQ"
+    echo ""
+    echo "  3. Simpan, lalu jalankan ulang:"
+    echo "       ./bin/devstack"
+    echo ""
+    echo "  💡 Gunakan editor favorit Anda:"
+    echo "       nano .env"
+    echo "       vim .env"
+    echo "       code .env"
+    echo ""
+    exit 1
 fi
 
 # Run detection

@@ -1,0 +1,24 @@
+version: '3.8'
+
+networks:
+  dev-network:
+    external: true
+
+services:
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: meilisearch-dev
+    restart: unless-stopped
+    networks:
+      - dev-network
+    environment:
+      - MEILI_NO_ANALYTICS=true
+      - MEILI_ENV=development
+    ports:
+      - "${MEILISEARCH_PORT:-7700}:7700"
+    volumes:
+      - meilisearch_data:/meili_data
+
+volumes:
+  meilisearch_data:
+    driver: local

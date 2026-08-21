@@ -57,7 +57,9 @@ dev-stack/
 │   ├── mongodb/         # MongoDB 7.0
 │   ├── redis/           # Redis 7
 │   ├── adminer/         # Database manager
-│   ├── mailhog/         # Email testing
+│   ├── mailpit/         # Email testing (modern replacement for MailHog)
+│   ├── rabbitmq/        # Message broker (Laravel Queues, Celery)
+│   ├── meilisearch/     # Full-text search engine
 │   ├── minio/           # S3 storage
 │   └── portainer/       # Docker WebUI
 └── docs/
@@ -70,7 +72,7 @@ dev-stack/
 
 ```bash
 devstack
-# Then select service number [1-8] and choose action
+# Then select service number [1-10] and choose action
 ```
 
 ### Available Services
@@ -82,14 +84,18 @@ devstack
 | 3 | MongoDB | mongodb-dev | mongo:7.0 | 27017 |
 | 4 | Redis | redis-dev | redis:7-alpine | 6379 |
 | 5 | Adminer | adminer-dev | adminer:latest | 8081 |
-| 6 | MailHog | mailhog-dev | mailhog/mailhog:latest | 8025 |
-| 7 | MinIO | minio-dev | minio/minio:latest | 9001 |
-| 8 | Portainer | portainer-dev | portainer/portainer-ce:latest | 9000 |
+| 6 | Mailpit | mailpit-dev | axllent/mailpit:latest | 8026 |
+| 7 | RabbitMQ | rabbitmq-dev | rabbitmq:3-management-alpine | 5672 / 15672 |
+| 8 | Meilisearch | meilisearch-dev | getmeili/meilisearch:latest | 7700 |
+| 9 | MinIO | minio-dev | minio/minio:latest | 9001 |
+| 10 | Portainer | portainer-dev | portainer/portainer-ce:latest | 9000 |
 
 ## 🌐 Web Interfaces
 
 - **Adminer (Database)**: http://localhost:8081
-- **MailHog (Email)**: http://localhost:8025
+- **Mailpit (Email Testing)**: http://localhost:8026
+- **RabbitMQ Management**: http://localhost:15672 (admin/adminpass)
+- **Meilisearch Dashboard**: http://localhost:7700
 - **Portainer (Docker UI)**: http://localhost:9000 (admin/admin)
 - **MinIO Console (S3 Storage)**: http://localhost:9002 (admin/password123)
 
