@@ -309,6 +309,10 @@ handle_main_action() {
 run_menu() {
     local choice=""
     local action=""
+    local result=0
+    
+    # Ensure we're in the right directory
+    cd "$(dirname "${BASH_SOURCE[0]}")/.." 2>/dev/null || true
     
     while true; do
         show_main_menu
@@ -317,7 +321,7 @@ run_menu() {
             echo ""
             echo -e "  ${GREEN}Goodbye!${NC}"
             echo ""
-            exit 0
+            return 0
         fi
         
         # Check if choice is a service number
@@ -327,7 +331,7 @@ run_menu() {
             while true; do
                 show_service_menu "$service"
                 if ! read -rp "" action; then
-                    break 2
+                    return 0
                 fi
                 
                 if ! handle_service_action "$service" "$action"; then
@@ -335,19 +339,19 @@ run_menu() {
                 fi
                 echo -n "  Press Enter to continue..."
                 if ! read -r; then
-                    break 2
+                    return 0
                 fi
             done
         elif [[ "$choice" =~ ^[UuAaSsGgIiVvQq0]$ ]]; then
             handle_main_action "$choice"
-            local result=$?
+            result=$?
             
             if [[ $result -eq 2 ]]; then
                 clear
                 echo ""
                 echo -e "  ${GREEN}Goodbye!${NC}"
                 echo ""
-                exit 0
+                return 0
             elif [[ $result -eq 3 ]]; then
                 print_error "Invalid choice. Use numbers 1-${#SERVICE_ORDER[@]} or actions U/A/S/G/I/V/Q"
             fi

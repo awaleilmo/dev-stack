@@ -1,23 +1,23 @@
 #!/usr/bin/env bash
 # bin/devstack - Main entry point for Dev Stack CLI
 
-set -euo pipefail
+set -uo pipefail
 
 # Resolve the actual script location, following symlinks
-SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")"
 SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # Source libraries in order (detect.sh guarded by _DETECT_SH_SOURCED)
-source "$PROJECT_ROOT/lib/config.sh"
-source "$PROJECT_ROOT/lib/detect.sh"
-source "$PROJECT_ROOT/lib/ui.sh"
-source "$PROJECT_ROOT/lib/services.sh"
-source "$PROJECT_ROOT/lib/guides.sh"
-source "$PROJECT_ROOT/lib/menu.sh"
+source "$PROJECT_ROOT/lib/config.sh" || { echo "Error: Failed to load config.sh" >&2; exit 1; }
+source "$PROJECT_ROOT/lib/detect.sh" || { echo "Error: Failed to load detect.sh" >&2; exit 1; }
+source "$PROJECT_ROOT/lib/ui.sh" || { echo "Error: Failed to load ui.sh" >&2; exit 1; }
+source "$PROJECT_ROOT/lib/services.sh" || { echo "Error: Failed to load services.sh" >&2; exit 1; }
+source "$PROJECT_ROOT/lib/guides.sh" || { echo "Error: Failed to load guides.sh" >&2; exit 1; }
+source "$PROJECT_ROOT/lib/menu.sh" || { echo "Error: Failed to load menu.sh" >&2; exit 1; }
 
 # Change to project root for docker compose commands
-cd "$PROJECT_ROOT"
+cd "$PROJECT_ROOT" 2>/dev/null || { echo "Error: Cannot change to project root: $PROJECT_ROOT" >&2; exit 1; }
 
 # Load .env if exists
 if [[ -f ".env" ]]; then
