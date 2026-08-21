@@ -4,7 +4,7 @@
 set -uo pipefail
 
 # Restore terminal sanity on exit/interrupt so a broken state can't persist
-trap 'stty sane >/dev/null 2>&1 || true' EXIT INT TERM
+trap 'restore_terminal' EXIT INT TERM
 
 # Resolve the actual script location, following symlinks
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")"
@@ -92,6 +92,13 @@ fi
 
 # Ensure network exists
 ensure_network
+
+# Check if we have an interactive terminal before starting menu
+if ! is_interactive; then
+    echo "Error: This CLI requires an interactive terminal (TTY)."
+    echo "Please run it directly in a terminal, not via pipe or script."
+    exit 1
+fi
 
 # Start menu
 run_menu

@@ -66,7 +66,7 @@ show_main_menu() {
     echo -e "  ${VB} [I] Install Mise Runtime${NC}  - Cek & buat panduan install mise + PHP/Node/Python"
     echo -e "  ${VB} [V] Verify System${NC}          - Tampilkan status lengkap sistem & runtime"
     echo ""
-    echo -e "  ${BOLD}Select service [1-8] or action [0-9/U/A/S/G/I/V/Q]:${NC} "
+    echo -ne "  ${BOLD}Select service [1-8] or action [0-9/U/A/S/G/I/V/Q]:${NC} "
 }
 
 # Show service submenu
@@ -176,7 +176,7 @@ handle_main_action() {
             guide_dir="$(pwd)"
             local docker_guide="$guide_dir/docker-installation.md"
             local devenv_guide="$guide_dir/development-environment-installation.md"
-            local             guide_count=0
+            local guide_count=0
             
             safe_clear
             print_header "Generate Installation Guides"
@@ -313,6 +313,13 @@ run_menu() {
     
     # Ensure we're in the right directory
     cd "$(dirname "${BASH_SOURCE[0]}")/.." 2>/dev/null || true
+    
+    # Verify we have an interactive terminal
+    if ! is_interactive; then
+        print_error "This CLI requires an interactive terminal (TTY)."
+        echo "Please run it directly in a terminal, not via pipe or script."
+        return 1
+    fi
     
     while true; do
         show_main_menu

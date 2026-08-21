@@ -191,6 +191,11 @@ show_logs() {
     local service="$1"
     local dir="${SERVICE_DIR[$service]}"
     
+    if ! is_interactive; then
+        print_error "Logs require an interactive terminal (TTY)."
+        return 1
+    fi
+    
     docker compose -f "$dir/docker-compose.yml" logs -f
 }
 
@@ -198,6 +203,11 @@ show_logs() {
 enter_shell() {
     local service="$1"
     local container="${SERVICE_CONTAINER[$service]}"
+    
+    if ! is_interactive; then
+        print_error "Shell access requires an interactive terminal (TTY)."
+        return 1
+    fi
     
     docker exec -it "$container" bash
 }

@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 
 # Box drawing characters
 TL='╔'
-TR='�╗'
+TR='╗'
 BL='╚'
 BR='╝'
 TM='╠'
@@ -82,6 +82,19 @@ print_prompt() {
 # Safe clear - never hang or fail even on a broken terminal
 safe_clear() {
     clear >/dev/null 2>&1 || printf '\033[2J\033[3J\033[H' >/dev/null 2>&1 || true
+}
+
+# Check if we're running in an interactive terminal
+is_interactive() {
+    [[ -t 0 && -t 1 ]]
+}
+
+# Restore terminal to sane state
+restore_terminal() {
+    stty sane >/dev/null 2>&1 || true
+    # Reset any terminal attributes that might be messed up
+    tput sgr0 >/dev/null 2>&1 || true
+    tput cnorm >/dev/null 2>&1 || true
 }
 
 # Timeout-wrapped docker for non-interactive calls (detection, status, network)
