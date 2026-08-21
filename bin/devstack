@@ -3,22 +3,8 @@
 
 set -uo pipefail
 
-# Save terminal state at start so we can always restore it
-ORIGINAL_STTY="$(stty -g 2>/dev/null || true)"
-
-# Restore terminal sanity on exit/interrupt so a broken state can't persist
-restore_terminal_state() {
-    if [[ -n "$ORIGINAL_STTY" ]]; then
-        stty "$ORIGINAL_STTY" >/dev/null 2>&1 || true
-    fi
-    stty sane >/dev/null 2>&1 || true
-    stty echo >/dev/null 2>&1 || true
-    stty icanon >/dev/null 2>&1 || true
-    printf '\033[0m' >/dev/null 2>&1 || true
-    printf '\033[?25h' >/dev/null 2>&1 || true
-    printf '\033[r' >/dev/null 2>&1 || true
-}
-trap 'restore_terminal_state' EXIT INT TERM
+# Minimal terminal safety - don't aggressively reset stty
+trap 'printf "\033[0m\033[?25h" 2>/dev/null || true' EXIT INT TERM
 
 # Resolve the actual script location, following symlinks
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")"
@@ -64,14 +50,16 @@ fi
 
 # Reset terminal mode (useful if terminal got stuck from a previous run)
 if [[ "${1:-}" == "--reset" || "${1:-}" == "-r" ]]; then
-    restore_terminal_state
-    echo "Terminal reset. If it still looks broken, run: reset"
+    echo "Resetting terminal..."
+    printf "\033c" 2>/dev/null || true
+    sleep 1
+    echo "Done. If it still looks broken, run: reset"
     exit 0
 fi
 
 # Non-hanging diagnostic mode (safe for server troubleshooting)
 if [[ "${1:-}" == "--check" || "${1:-}" == "-c" ]]; then
-    safe_clear 2>/dev/null || true
+    safe_clear
     print_header "Dev Stack — System Check"
     echo ""
     print_detection_summary
@@ -89,7 +77,7 @@ DEVENV_GUIDE="development-environment-installation.md"
 if [[ "$HAS_DOCKER" == false ]]; then
     ensure_network &>/dev/null || true
     guide_file=$(generate_docker_guide "$DOCKER_GUIDE")
-    safe_clear 2>/dev/null || true
+    safe_clear
     print_header "Prerequisites Not Met"
     echo ""
     echo "  Docker is not installed on this system."
@@ -100,13 +88,14 @@ if [[ "$HAS_DOCKER" == false ]]; then
     echo "  Please read and run the instructions in that file,"
     echo "  then run './bin/devstack' again."
     echo ""
+    read -rp "  Press Enter to exit..." || true
     exit 0
 fi
 
 # Check mise - non-fatal, generate guide but continue
 if [[ "$HAS_MISE" == false ]]; then
     guide_file=$(generate_devenv_guide "$DEVENV_GUIDE")
-    safe_clear 2>/dev/null || true
+    safe_clear
     print_header "Development Runtime Not Available"
     echo ""
     echo "  mise (tool installer) is not installed."
@@ -122,6 +111,7 @@ if [[ "$HAS_MISE" == false ]]; then
     echo ""
     echo "  Continuing to main menu..."
     echo ""
+    read -rp "  Press Enter to continue..." || true
 fi
 
 # Ensure network exists
@@ -143,6 +133,14 @@ if ! is_interactive; then
     echo "Please run it directly in a terminal, not via pipe or script."
     exit 1
 fi
+
+# Startup banner - always visible
+clear
+echo ""
+echo -e "  ${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "  ${GREEN}🐳  Dev Stack Manager v1.0  -  Starting...${NC}"
+echo -e "  ${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
 
 # Start menu
 run_menu

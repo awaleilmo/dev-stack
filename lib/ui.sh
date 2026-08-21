@@ -81,7 +81,8 @@ print_prompt() {
 
 # Safe clear - never hang or fail even on a broken terminal
 safe_clear() {
-    clear >/dev/null 2>&1 || printf '\033[2J\033[3J\033[H' >/dev/null 2>&1 || true
+    # Use printf to clear screen directly - no external command dependencies
+    printf '\033[2J\033[3J\033[H' >/dev/null 2>&1 || true
 }
 
 # Check if we're running in an interactive terminal
