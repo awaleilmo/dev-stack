@@ -324,7 +324,7 @@ run_menu() {
     while true; do
         show_main_menu
         # Read with timeout so it never hangs forever
-        if ! read -t 300 -rp "" choice; then
+        if ! read -r choice; then
             echo ""
             echo -e "  ${GREEN}Goodbye!${NC}"
             echo ""
@@ -337,7 +337,7 @@ run_menu() {
             
             while true; do
                 show_service_menu "$service"
-                if ! read -t 300 -rp "" action; then
+                if ! read -r action; then
                     return 0
                 fi
                 
@@ -345,7 +345,7 @@ run_menu() {
                     break
                 fi
                 echo -n "  Press Enter to continue..."
-                if ! read -t 60 -r; then
+                if ! read -r; then
                     return 0
                 fi
             done
