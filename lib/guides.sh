@@ -263,20 +263,69 @@ sudo ${SYSTEM_PM} install -y ${php_deps[*]}
 \`\`\`
 
 EOF
-        else
-            # Always include common missing deps for PHP on Ubuntu
-            cat >> "$guide_file" << 'EOF'
-## Step 3: Install PHP System Dependencies (Recommended)
+        fi
+        # ALWAYS include the comprehensive list - mise PHP compile is fragile
+        cat >> "$guide_file" << 'EOF'
+## Step 3: Install Comprehensive PHP System Dependencies
 
-Even if detection passed, these packages are commonly needed for PHP compilation:
+Mise compiles PHP from source, which requires MANY system libraries.
+Even if some packages are already installed, run this to ensure everything is present:
 
 \`\`\`bash
 sudo apt update
-sudo apt install -y libssl-dev libzip-dev libonig-dev libxml2-dev libpng-dev libicu-dev libjpeg-dev libbz2-dev zlib1g-dev libcurl4-openssl-dev libtidy-dev
+sudo apt install -y \
+  build-essential \
+  autoconf \
+  automake \
+  bison \
+  pkg-config \
+  libssl-dev \
+  libzip-dev \
+  libonig-dev \
+  libxml2-dev \
+  libpng-dev \
+  libicu-dev \
+  libjpeg-dev \
+  libbz2-dev \
+  zlib1g-dev \
+  libcurl4-openssl-dev \
+  libtidy-dev \
+  libsqlite3-dev \
+  libreadline-dev \
+  libgmp-dev \
+  libsodium-dev \
+  libfreetype6-dev \
+  libwebp-dev \
+  libargon2-dev \
+  libpspell-dev \
+  libsnmp-dev \
+  libldap2-dev \
+  unixodbc-dev \
+  libdb-dev \
+  librevop-dev \
+  libldb-dev \
+  libmcrypt-dev
 \`\`\`
 
+### Alternative: Use pre-compiled PHP (FASTER, more reliable)
+
+If compiling via mise fails, use this simpler approach instead:
+
+\`\`\`bash
+# Add Ondrej PHP PPA (pre-compiled, no build needed)
+sudo apt install -y software-properties-common
+sudo add-apt-repository -y ppa:ondrej/php
+sudo apt update
+sudo apt install -y php8.3 php8.3-cli php8.3-common php8.3-mysql php8.3-pgsql \
+  php8.3-sqlite3 php8.3-curl php8.3-gd php8.3-mbstring php8.3-xml \
+  php8.3-bcmath php8.3-zip php8.3-intl php8.3-redis php8.3-mongodb
+
+# Make PHP 8.3 default
+sudo update-alternatives --set php /usr/bin/php8.3
+\`\`\`
+
+Then skip Step 4 and go straight to Composer installation.
 EOF
-        fi
         
         if [[ ${#python_deps[@]} -gt 0 ]]; then
             cat >> "$guide_file" << EOF
