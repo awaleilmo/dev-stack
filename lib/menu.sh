@@ -33,6 +33,39 @@ guide_exists() {
     return 1
 }
 
+# Force regenerate all guides (ignores existing files)
+force_regenerate_guides() {
+    local guide_dir
+    guide_dir="$(pwd)"
+    local regenerated=0
+    
+    # Always regenerate Docker guide if Docker is missing
+    if [[ "$HAS_DOCKER" == false ]]; then
+        local df
+        df=$(generate_docker_guide "$guide_dir/docker-installation.md")
+        echo "  ✅ Generated: $df"
+        regenerated=$((regenerated + 1))
+    fi
+    
+    # Always regenerate DevEnv guide if mise is missing
+    if [[ "$HAS_MISE" == false ]]; then
+        local gf
+        gf=$(generate_devenv_guide "$guide_dir/development-environment-installation.md")
+        echo "  ✅ Generated: $gf"
+        regenerated=$((regenerated + 1))
+    fi
+    
+    # If .env is missing, show instructions
+    if [[ "$HAS_ENV" == false ]]; then
+        echo ""
+        echo "  ⚠️  .env file is missing"
+        echo "  💡 Run: cp .env.example .env"
+        echo "     Then edit: nano .env"
+    fi
+    
+    return $regenerated
+}
+
 # Get required guides based on system state
 get_required_guides() {
     local guides=()
@@ -334,63 +367,91 @@ handle_main_action() {
             safe_clear
             print_header "Installation Guides"
             echo ""
-            echo "  File guide berisi instruksi instalasi untuk dependency"
-            echo "  yang belum tersedia di sistem Anda."
+            echo "  Menu ini akan:"
+            echo "  1. Cek keberadaan file guide"
+            echo "  2. Regenerate otomatis jika file hilang atau dependency belum terinstall"
             echo ""
             
-            # Show guide file status
-            list_guide_files
-            echo ""
-            
-            # Check what needs to be generated
-            local needs_docker=false
-            local needs_devenv=false
-            local needs_env=false
-            
-            if [[ "$HAS_DOCKER" == false ]]; then
-                needs_docker=true
-            fi
-            if [[ "$HAS_MISE" == false ]]; then
-                needs_devenv=true
-            fi
-            if [[ "$HAS_ENV" == false ]]; then
-                needs_env=true
-            fi
-            
-            # Generate missing guides
+            # Force regenerate based on current system state
             local guide_dir
             guide_dir="$(pwd)"
-            local regenerated_count=0
+            local regenerated=0
             
-            if [[ "$needs_docker" == true ]]; then
-                local df
-                df=$(generate_docker_guide "$guide_dir/docker-installation.md")
-                echo "  ✅ Generated: $df"
-                regenerated_count=$((regenerated_count + 1))
+            # Check and regenerate Docker guide
+            local docker_guide="$guide_dir/docker-installation.md"
+            if [[ "$HAS_DOCKER" == false ]] || ! guide_exists "$docker_guide"; then
+                if [[ "$HAS_DOCKER" == false ]]; then
+                    local df
+                    df=$(generate_docker_guide "$docker_guide")
+                    echo "  ✅ Generated: $df"
+                    regenerated=$((regenerated + 1))
+                elif ! guide_exists "$docker_guide"; then
+                    echo "  ⚠️  Docker sudah terinstall tapi file guide hilang"
+                    echo "  💡 Guide akan dibuat ulang: $docker_guide"
+                    local df
+                    df=$(generate_docker_guide "$docker_guide")
+                    echo "  ✅ Regenerated: $df"
+                    regenerated=$((regenerated + 1))
+                fi
             fi
             
-            if [[ "$needs_devenv" == true ]]; then
-                local gf
-                gf=$(generate_devenv_guide "$guide_dir/development-environment-installation.md")
-                echo "  ✅ Generated: $gf"
-                regenerated_count=$((regenerated_count + 1))
+            # Check and regenerate DevEnv guide
+            local devenv_guide="$guide_dir/development-environment-installation.md"
+            if [[ "$HAS_MISE" == false ]] || ! guide_exists "$devenv_guide"; then
+                if [[ "$HAS_MISE" == false ]]; then
+                    local gf
+                    gf=$(generate_devenv_guide "$devenv_guide")
+                    echo "  ✅ Generated: $gf"
+                    regenerated=$((regenerated + 1))
+                elif ! guide_exists "$devenv_guide"; then
+                    echo "  ⚠️  Mise sudah terinstall tapi file guide hilang"
+                    echo "  💡 Guide akan dibuat ulang: $devenv_guide"
+                    local gf
+                    gf=$(generate_devenv_guide "$devenv_guide")
+                    echo "  ✅ Regenerated: $gf"
+                    regenerated=$((regenerated + 1))
+                fi
             fi
             
-            if [[ "$needs_env" == true ]]; then
+            # Check .env
+            if [[ "$HAS_ENV" == false ]]; then
                 echo ""
-                echo "  ⚠️  .env file is missing"
-                echo "  💡 Run this command to create it:"
+                echo "  ⚠️  .env file tidak ditemukan"
+                echo "  💡 Jalankan:"
                 echo "     cp .env.example .env"
                 echo "     nano .env"
             fi
             
+            # Show current guide files
             echo ""
-            if [[ $regenerated_count -eq 0 && "$needs_env" == false ]]; then
-                echo "  ✅ Semua dependency sudah terinstall. Tidak ada guide yang perlu dibuat."
+            echo "  ${CYAN}Guide Files Status:${NC}"
+            if guide_exists "$docker_guide"; then
+                local lines
+                lines=$(wc -l < "$docker_guide" 2>/dev/null || echo "?")
+                echo "  ✅ docker-installation.md ($lines lines)"
             else
-                echo "  📁 Guide files berada di: $(pwd)/"
+                echo "  ❌ docker-installation.md (missing)"
+            fi
+            if guide_exists "$devenv_guide"; then
+                local lines
+                lines=$(wc -l < "$devenv_guide" 2>/dev/null || echo "?")
+                echo "  ✅ development-environment-installation.md ($lines lines)"
+            else
+                echo "  ❌ development-environment-installation.md (missing)"
+            fi
+            if [[ -f "$guide_dir/.env" ]]; then
+                echo "  ✅ .env (configured)"
+            else
+                echo "  ❌ .env (missing)"
+            fi
+            echo ""
+            
+            if [[ $regenerated -eq 0 ]] && [[ "$HAS_ENV" == true ]]; then
+                echo "  ✅ Semua guide sudah up-to-date. Tidak ada yang perlu dibuat."
+            else
+                echo "  📁 Lokasi guide: $(pwd)/"
                 echo ""
-                echo "  💡 Cara membuka:"
+                echo "  💡 Buka dengan editor:"
                 echo "     nano docker-installation.md"
                 echo "     nano development-environment-installation.md"
             fi
