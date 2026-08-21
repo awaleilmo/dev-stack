@@ -32,6 +32,8 @@ declare -g HAS_NODE=false
 declare -g NODE_VERSION=""
 declare -g HAS_PYTHON=false
 declare -g PYTHON_VERSION=""
+declare -g HAS_COMPOSER=false
+declare -g COMPOSER_VERSION=""
 declare -g MISSING_DEPS=()
 
 # Check if command exists
@@ -136,6 +138,17 @@ detect_python() {
     fi
 }
 
+# Detect Composer
+detect_composer() {
+    if has_cmd composer; then
+        HAS_COMPOSER=true
+        COMPOSER_VERSION="$(composer --version 2>/dev/null | head -1 | sed -E 's/.*Composer version ([0-9.]+).*/\1/')"
+        if [[ -z "$COMPOSER_VERSION" ]]; then
+            COMPOSER_VERSION="installed"
+        fi
+    fi
+}
+
 # Detect system dependencies
 declare -gA REQUIRED_SYSTEM_DEPS=(
     [curl]=curl
@@ -198,6 +211,7 @@ detect_all() {
     detect_php
     detect_node
     detect_python
+    detect_composer
     detect_system_deps
 }
 
@@ -237,6 +251,13 @@ print_detection_summary() {
         echo -e "  ${GREEN}✅${NC} Python ${MISE_PYTHON_VERSION}: ${PYTHON_VERSION:-installed}"
     else
         echo -e "  ${YELLOW}⬚${NC} Python ${MISE_PYTHON_VERSION}: not configured via mise"
+    fi
+    echo ""
+    echo -e "${CYAN}Development Tools:${NC}"
+    if [[ "$HAS_COMPOSER" == true ]]; then
+        echo -e "  ${GREEN}✅${NC} Composer: $COMPOSER_VERSION"
+    else
+        echo -e "  ${YELLOW}⬚${NC} Composer: not installed"
     fi
     echo ""
 }

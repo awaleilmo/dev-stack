@@ -249,6 +249,7 @@ handle_main_action() {
                 echo "  Isi panduan tersebut berisi:"
                 echo "  - Cara install mise (tool version manager)"
                 echo "  - Cara install PHP ${MISE_PHP_VERSION}, Node.js ${MISE_NODE_VERSION}, Python ${MISE_PYTHON_VERSION}"
+                echo "  - Cara install Composer"
                 echo "  - Dependencies sistem yang diperlukan"
                 echo ""
                 echo "  💡 Buka file tersebut dengan: nano $guide_file"
@@ -261,8 +262,19 @@ handle_main_action() {
                 echo "  - Node.js ${MISE_NODE_VERSION}: $([ "$HAS_NODE" == true ] && echo "✅ ${NODE_VERSION:-installed}" || echo "⬚ belum dikonfigurasi")"
                 echo "  - Python ${MISE_PYTHON_VERSION}: $([ "$HAS_PYTHON" == true ] && echo "✅ ${PYTHON_VERSION:-installed}" || echo "⬚ belum dikonfigurasi")"
                 echo ""
+                echo "  Status Tools saat ini:"
+                if [[ "$HAS_COMPOSER" == true ]]; then
+                    echo "  - Composer: ✅ ${COMPOSER_VERSION:-installed}"
+                else
+                    echo "  - Composer: ⬚ belum terinstall"
+                fi
+                echo ""
                 echo "  💡 Untuk install runtime via mise, jalankan:"
                 echo "      mise use -g php@${MISE_PHP_VERSION} node@${MISE_NODE_VERSION} python@${MISE_PYTHON_VERSION}"
+                echo ""
+                echo "  💡 Untuk install Composer, jalankan:"
+                echo "      curl -sS https://getcomposer.org/installer | php"
+                echo "      sudo mv composer.phar /usr/local/bin/composer"
                 echo ""
             fi
             echo ""

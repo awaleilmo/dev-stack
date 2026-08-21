@@ -245,12 +245,28 @@ EOF
         fi
     fi
     
-    cat >> "$guide_file" << 'EOF'
-## Step 4: Verify Installation
+    cat >> "$guide_file" << EOF
+## Step 4: Install Composer
+```bash
+curl -sS https://getcomposer.org/installer | php
+sudo mv composer.phar /usr/local/bin/composer
+sudo chmod +x /usr/local/bin/composer
+```
+
+## Step 5: Verify Installation
 ```bash
 php -v
 node -v
 python3 -v
+composer --version
+```
+
+## Step 5: Verify Installation
+```bash
+php -v
+node -v
+python3 -v
+composer --version
 ```
 
 ## Next
