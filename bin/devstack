@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+# bin/devstack - Main entry point for Dev Stack CLI
+
+set -euo pipefail
+
+# Resolve the actual script location, following symlinks
+SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# Source libraries in order (detect.sh guarded by _DETECT_SH_SOURCED)
+source "$PROJECT_ROOT/lib/config.sh"
+source "$PROJECT_ROOT/lib/detect.sh"
+source "$PROJECT_ROOT/lib/ui.sh"
+source "$PROJECT_ROOT/lib/services.sh"
+source "$PROJECT_ROOT/lib/guides.sh"
+source "$PROJECT_ROOT/lib/menu.sh"
+
+# Change to project root for docker compose commands
+cd "$PROJECT_ROOT"
+
+# Load .env if exists
+if [[ -f ".env" ]]; then
+    set -a
+    source ".env"
+    set +a
+fi
+
+# Run detection
+detect_all
+
+# Guide paths
+DOCKER_GUIDE="docker-installation.md"
+DEVENV_GUIDE="development-environment-installation.md"
+
+# Check Docker - fatal, show guide and exit
+if [[ "$HAS_DOCKER" == false ]]; then
+    ensure_network &>/dev/null || true
+    local guide_file
+    guide_file=$(generate_docker_guide "$DOCKER_GUIDE")
+    clear
+    print_header "Prerequisites Not Met"
+    echo ""
+    echo "  Docker is not installed on this system."
+    echo ""
+    echo "  Installation guide created: $guide_file"
+    echo "  Location: $(pwd)/$DOCKER_GUIDE"
+    echo ""
+    echo "  Please read and run the instructions in that file,"
+    echo "  then run './bin/devstack' again."
+    echo ""
+    read -rp "  Press Enter to exit..."
+    exit 0
+fi
+
+# Check mise - non-fatal, generate guide but continue
+if [[ "$HAS_MISE" == false ]]; then
+    local guide_file
+    guide_file=$(generate_devenv_guide "$DEVENV_GUIDE")
+    clear
+    print_header "Development Runtime Not Available"
+    echo ""
+    echo "  mise (tool installer) is not installed."
+    echo "  PHP ${MISE_PHP_VERSION} / Node ${MISE_NODE_VERSION} / Python ${MISE_PYTHON_VERSION}"
+    echo "  will not be available via mise."
+    echo ""
+    echo "  Installation guide created: $guide_file"
+    echo "  Location: $(pwd)/$DEVENV_GUIDE"
+    echo ""
+    echo "  You can still use this CLI to manage Docker services,"
+    echo "  but PHP/Node.js/Python development will require"
+    echo "  installing runtimes via mise or manually."
+    echo ""
+    read -rp "  [R] Proceed to Main Menu  [Q] Quit: " choice
+    if [[ "${choice:-Q}" == "Q" || "${choice:-Q}" == "q" ]]; then
+        exit 0
+    fi
+fi
+
+# Ensure network exists
+ensure_network
+
+# Start menu
+run_menu

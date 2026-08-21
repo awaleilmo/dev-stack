@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# bin/devstack-install - Install devstack as global command
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(dirname "$SCRIPT_DIR")"
+SYMLINK_TARGET="$HOME/.local/bin/devstack"
+
+# Create bin directory if needed
+mkdir -p "$HOME/.local/bin"
+
+# Create symlink
+if [[ -L "$SYMLINK_TARGET" ]]; then
+    rm "$SYMLINK_TARGET"
+fi
+ln -sf "$REPO_ROOT/bin/devstack" "$SYMLINK_TARGET"
+
+# Check if ~/.local/bin is in PATH
+if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+    echo ""
+    echo "Note: ~/.local/bin is not in your PATH."
+    echo "Add this to your ~/.bashrc or ~/.zshrc:"
+    echo ""
+    echo "  export PATH=\"\$HOME/.local/bin:\$PATH\""
+    echo ""
+    echo "Or run: source ~/.bashrc"
+fi
+
+echo ""
+echo "✅ devstack is now available globally!"
+echo ""
+echo "   Test it by running: devstack"
+echo ""

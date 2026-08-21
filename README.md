@@ -1,16 +1,16 @@
 # 🐳 Docker Development Toolkit
 
-Simple, manual Docker development environment with global PHP/Composer access. No automated scripts - just copy, paste, and run.
+Simple, manual Docker development environment with global CLI access. No automated scripts - just one command to manage everything.
 
 ## ✨ Features
 
-- **🌍 Global Commands** - Use `php`, `composer`, `artisan` from any directory
+- **🌍 Global CLI** - Use `devstack` from any directory
 - **🔧 Modular Services** - Pick and choose what you need
-- **📁 Project Agnostic** - Works with any PHP project structure
-- **💻 IDE Friendly** - Right-click → Open Terminal → `composer install`
-- **🔗 No Lock-in** - Simple Docker Compose files you can customize
+- **📁 Project Agnostic** - Works with any PHP/Node project
+- **💻 IDE Friendly** - Right-click → Open Terminal
+- **🔗 No Lock-in** - Simple Docker Compose files
 
-## 🚀 Quick Start (5 Minutes)
+## 🚀 Quick Start
 
 ### 1. Clone Repository
 
@@ -19,120 +19,123 @@ git clone https://github.com/awaleilmo/dev-stack.git ~/dev-stack
 cd ~/dev-stack
 ```
 
-### 2. Create Network
+### 2. Install Global Command (One-time)
 
 ```bash
-docker network create dev-network
+./bin/devstack-install
 ```
 
-### 3. Start Services
+### 3. Run Dev Stack
 
 ```bash
-# PHP only
-cd services/php/
-docker-compose up -d
-
-# MySQL only  
-cd ../mysql/
-docker-compose up -d
-
-# Adminer for database management
-cd ../adminer/
-docker-compose up -d
+devstack
 ```
 
-### 4. Add Aliases (Copy-Paste)
+Or from the repository:
 
 ```bash
-# Copy content from aliases/bashrc-snippet.txt
-# Paste into your ~/.bashrc
-nano ~/.bashrc
-
-# Reload shell
-source ~/.bashrc
-```
-
-### 5. Test
-
-```bash
-# Test from any directory
-cd ~/Documents
-php -v
-composer -V
-
-# Visit http://localhost:8080
-# Visit http://localhost:8081 (Adminer)
+./bin/devstack
 ```
 
 ## 📁 Repository Structure
 
 ```
 dev-stack/
-├── services/              # Individual services
-│   ├── php/              # FrankenPHP + PHP 8.3
-│   ├── mysql/            # MySQL 8.0
-│   ├── postgres/         # PostgreSQL 15  
-│   ├── redis/            # Redis 7
-│   ├── adminer/          # Database manager
-│   └── mailhog/          # Email testing
-│   ├── portainer/        # Docker WebUI
-│   ├── minio/            # S3 storage
-└── aliases/              # Copy-paste aliases
-    ├── bashrc-snippet.txt
+├── bin/
+│   ├── devstack          # Main CLI entry point
+│   └── devstack-install  # Global command installer
+├── lib/
+│   ├── config.sh         # Configuration defaults
+│   ├── detect.sh         # System detection
+│   ├─�� ui.sh             # UI utilities
+│   ├── menu.sh           # Interactive menu
+│   ├── services.sh       # Service registry
+│   └── guides.sh         # Installation guides
+├── services/             # Individual services
+│   ├── mysql/           # MySQL 8.0
+│   ├── postgres/        # PostgreSQL 15
+│   ├── mongodb/         # MongoDB 7.0
+│   ├── redis/           # Redis 7
+│   ├── adminer/         # Database manager
+│   ├── mailhog/         # Email testing
+│   ├── minio/           # S3 storage
+│   └── portainer/       # Docker WebUI
+└── docs/
+    └── CLI-DESIGN.md     # CLI design documentation
 ```
 
 ## 🎛️ Service Management
 
-### Starting Individual Services
+### Starting Services
 
 ```bash
-# Start PHP
-cd services/php/
-docker-compose up -d
-
-# Start MySQL
-cd ../mysql/
-docker-compose up -d
-
-# Start Adminer (database manager)
-cd ../adminer/
-docker-compose up -d
-
-# Start PostgreSQL
-cd ../postgres/
-docker-compose up -d
-
-# Start Node.js
-cd ../nodejs/
-docker-compose up -d
-
-# Start Redis
-cd ../redis/
-docker-compose up -d
-
-# Start MailHog (email testing)
-cd ../mailhog/
-docker-compose up -d
-
-# Start Portainer (Docker UI)
-cd ../portainer/
-docker-compose up -d
-
-# Start MinIO (S3 storage)
-cd ../minio/
-docker-compose up -d
+devstack
+# Then select service number [1-8] and choose action
 ```
 
-### Stopping Services
+### Available Services
+
+| # | Service | Container | Image | Port |
+|---|---------|-----------|-------|------|
+| 1 | MySQL | mysql8-dev | mysql:8.0 | 3306 |
+| 2 | PostgreSQL | postgres15-dev | postgres:15 | 5432 |
+| 3 | MongoDB | mongodb-dev | mongo:7.0 | 27017 |
+| 4 | Redis | redis-dev | redis:7-alpine | 6379 |
+| 5 | Adminer | adminer-dev | adminer:latest | 8081 |
+| 6 | MailHog | mailhog-dev | mailhog/mailhog:latest | 8025 |
+| 7 | MinIO | minio-dev | minio/minio:latest | 9001 |
+| 8 | Portainer | portainer-dev | portainer/portainer-ce:latest | 9000 |
+
+## 🌐 Web Interfaces
+
+- **Adminer (Database)**: http://localhost:8081
+- **MailHog (Email)**: http://localhost:8025
+- **Portainer (Docker UI)**: http://localhost:9000 (admin/admin)
+- **MinIO Console (S3 Storage)**: http://localhost:9002 (admin/password123)
+
+## 💻 Development Runtimes (via mise)
+
+This toolkit manages Docker services. For development runtimes (PHP, Node.js, Python), use [mise](https://mise.jdx.dev/):
 
 ```bash
-# Stop specific service
-cd services/php/
-docker-compose down
+# Install mise
+curl https://mise.run | sh
 
-# Stop all containers
-docker stop $(docker ps -q)
+# Configure global versions
+mise use -g php@8.3 node@22 python@3.13
+
+# Verify
+php -v
+node -v
+python3 -v
 ```
+
+## 📖 CLI Commands
+
+### Main Menu
+
+| Key | Action |
+|-----|--------|
+| `1-8` | Manage specific service |
+| `U` | Update all images |
+| `A` | Start all services |
+| `S` | Stop all services |
+| `I` | Install mise runtime |
+| `Q` | Quit |
+
+### Service Submenu
+
+| Key | Action |
+|-----|--------|
+| `S` | Start |
+| `T` | Stop |
+| `R` | Restart |
+| `L` | Logs (follow) |
+| `H` | Shell access |
+| `U` | Update image |
+| `D` | Remove (with data) |
+| `I` | Install (new) |
+| `B` | Back to main menu |
 
 ## 🗄️ Database Information
 
@@ -141,177 +144,49 @@ docker stop $(docker ps -q)
 | MySQL | localhost | 3306 | user | userpass | app_db |
 | PostgreSQL | localhost | 5432 | pguser | pgpass | app_pgdb |
 | Redis | localhost | 6379 | - | - | - |
+| MongoDB | localhost | 27017 | mongouser | mongopass | app_mongo |
 | MinIO | localhost | 9001 | admin | password123 | - |
-
-## 🌐 Web Interfaces
-
-- **FrankenPHP**: http://localhost:8080
-- **Adminer (Database)**: http://localhost:8081  
-- **MailHog (Email)**: http://localhost:8025
-- **Portainer (Docker UI)**: http://localhost:9000 (admin/admin)
-- **MinIO Console (S3 Storage)**: http://localhost:9002 (admin/password123)
-- **Node.js Apps**: Use port from your project (e.g., 3000, 4200, 5173)
-
-## 💻 Available Commands
-
-After adding aliases, these work from **any directory**:
-
-```bash
-# Core commands
-php -v                    # PHP version
-composer install          # Install dependencies
-artisan migrate           # Laravel artisan
-
-# Node.js commands
-node -v                   # Node.js version
-npm install               # Install packages
-yarn dev                  # Run development server
-npm run build             # Build for production
-
-# Install tools on-demand
-npm install -g @vue/cli   # Vue CLI
-npm install -g vite       # Vite
-npx create-react-app my-app # React app
-
-# Laravel shortcuts  
-migrate                   # php artisan migrate
-fresh                     # php artisan migrate:fresh --seed
-tinker                    # php artisan tinker
-serve                     # php artisan serve
-
-# Database connections
-mysql-connect             # Connect to MySQL
-postgres-connect          # Connect to PostgreSQL
-redis-cli                 # Connect to Redis
-
-# Container access
-franken                   # Enter PHP container
-franken-here             # Enter container in current directory
-```
-
-## 🎯 Usage Examples
-
-### Laravel Project
-
-```bash
-# Any Laravel project directory
-cd ~/my-laravel-project
-
-# Works immediately
-composer install
-cp .env.example .env
-php artisan key:generate
-migrate
-serve
-```
-
-### Vue.js Project
-
-```bash
-cd ~/my-vue-project
-npm install               # Install Node.js dependencies
-npm run dev              # Start dev server (http://localhost:3000)
-
-# If using PHP backend
-composer install         # Install PHP dependencies
-php artisan serve        # Start API server (http://localhost:8000)
-```
-
-### React Project
-
-```bash
-cd ~/my-react-project
-npm install
-npm start                # Runs on http://localhost:3000
-
-# Or with Vite
-npm run dev              # Runs on http://localhost:5173
-```
-
-### Laravel + Vue/React
-
-```bash
-cd ~/my-laravel-app
-composer install         # PHP dependencies
-npm install              # Node.js dependencies  
-npm run dev              # Build assets
-php artisan serve        # Start Laravel
-```
-
-### Any PHP Project
-
-```bash
-cd /any/php/project
-php -v                    # ✅ Works
-composer update           # ✅ Works
-php index.php            # ✅ Works
-```
 
 ## 🔧 Customization
 
 ### Change Ports
 
-Edit any `docker-compose.yml`:
+Edit `.env` file:
 
-```yaml
-ports:
-  - "8081:8080"  # Change port to 8081
+```bash
+MYSQL_PORT=3306
+POSTGRES_PORT=5432
+REDIS_PORT=6379
 ```
 
 ### Change Database Passwords
 
-```yaml
-environment:
-  MYSQL_ROOT_PASSWORD: your_secure_password
-  MYSQL_PASSWORD: your_user_password
-```
-
-### Add PHP Extensions
-
-Edit `services/php/Dockerfile`:
-
-```dockerfile
-RUN docker-php-ext-install your_extension
-```
-
-Rebuild:
 ```bash
-cd services/php/
-docker-compose down
-docker-compose up -d --build
+MYSQL_ROOT_PASSWORD=rootpass
+MYSQL_PASSWORD=userpass
+POSTGRES_PASSWORD=pgpass
 ```
 
 ## 🔄 Management
 
-### Start/Stop Services
-
-```bash
-# Start individual services
-cd services/php/
-docker-compose up -d
-
-cd services/mysql/
-docker-compose up -d
-
-# Stop individual services
-cd services/php/
-docker-compose down
-```
-
 ### Check Status
 
 ```bash
-docker ps
-docker logs frankenphp-dev
+devstack
+# View running services in the main menu
 ```
 
-### Update
+### Update All Services
 
 ```bash
-cd ~/dev-stack
-git pull origin main
-docker-compose pull
-docker-compose up -d --build
+devstack
+# Press [U] to pull all images
+```
+
+### Uninstall Global Command
+
+```bash
+rm -f ~/.local/bin/devstack
 ```
 
 ## 🛠️ Requirements
@@ -319,24 +194,14 @@ docker-compose up -d --build
 - Docker & Docker Compose
 - Git
 - Bash or Zsh shell
-
-## 📖 Documentation
-
-- [Manual Setup Guide](docs/Manual-Setup.md) - Detailed setup instructions
-
-## 🤝 Contributing
-
-1. Fork repository
-2. Create feature branch
-3. Make changes
-4. Submit pull request
+- Linux OS (Ubuntu/Debian/Fedora/Arch)
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file.
+MIT License
 
 ---
 
 **Simple. Manual. No Magic.** 🎯
 
-Just Docker Compose files and copy-paste aliases for global PHP development access.
+One command to manage your development stack.
