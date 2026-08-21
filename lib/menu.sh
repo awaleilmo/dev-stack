@@ -88,16 +88,16 @@ show_service_menu() {
     echo -e "  ${CYAN}Actions${NC}"
     
     if [[ "$status" == "not-installed" ]]; then
-        echo "  [I] Install         - Download image & buat container baru"
-        echo "  [D] Download Image  - Download image saja (tanpa container)"
+        echo "  [1] Install         - Download image & buat container baru"
+        echo "  [2] Download Image  - Download image saja (tanpa container)"
     else
-        echo "  [S] Start           - Jalankan container"
-        echo "  [T] Stop            - Hentikan container"
-        echo "  [R] Restart         - Stop lalu start ulang"
-        echo "  [L] Logs            - Lihat log container (-f)"
-        echo "  [H] Shell           - Masuk ke container bash"
-        echo "  [U] Update Image    - Pull image baru & restart container"
-        echo "  [D] Remove          - Hapus container & data (destructive)"
+        echo "  [1] Start           - Jalankan container"
+        echo "  [2] Stop            - Hentikan container"
+        echo "  [3] Restart         - Stop lalu start ulang"
+        echo "  [4] Logs            - Lihat log container (-f)"
+        echo "  [5] Shell           - Masuk ke container bash"
+        echo "  [6] Update Image    - Pull image baru & restart container"
+        echo "  [7] Remove          - Hapus container & data (destructive)"
     fi
     echo ""
     echo "  [0] Back to Main Menu"
@@ -111,15 +111,30 @@ handle_service_action() {
     local action="$2"
     
     case "$action" in
-        S|s) start_service "$service" ;;
-        T|t) stop_service "$service" ;;
-        R|r) restart_service "$service" ;;
-        L|l) show_logs "$service" ;;
-        H|h) enter_shell "$service" ;;
-        U|u) update_service "$service" ;;
-        D|d) remove_service "$service" ;;
-        I|i) install_service "$service" ;;
-        B|b|0) return 1 ;;
+        1) 
+            local status
+            status=$(get_service_status "$service")
+            if [[ "$status" == "not-installed" ]]; then
+                install_service "$service"
+            else
+                start_service "$service"
+            fi
+            ;;
+        2)
+            local status
+            status=$(get_service_status "$service")
+            if [[ "$status" == "not-installed" ]]; then
+                download_image "$service"
+            else
+                stop_service "$service"
+            fi
+            ;;
+        3) restart_service "$service" ;;
+        4) show_logs "$service" ;;
+        5) enter_shell "$service" ;;
+        6) update_service "$service" ;;
+        7) remove_service "$service" ;;
+        0) return 1 ;;
         *) print_error "Invalid choice"; sleep 1 ;;
     esac
     

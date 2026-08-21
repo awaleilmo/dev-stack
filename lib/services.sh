@@ -239,13 +239,30 @@ update_service() {
     fi
 }
 
-# Install service (pull image only)
+# Install service (pull image + start container)
 install_service() {
+    local service="$1"
+    local dir="${SERVICE_DIR[$service]}"
+    local image="${SERVICE_IMAGE[$service]}"
+    local container="${SERVICE_CONTAINER[$service]}"
+    
+    echo "Downloading $image..."
+    docker_safe pull "$image" >/dev/null 2>&1
+    print_success "$service image downloaded"
+    
+    echo "Starting $service..."
+    ensure_network
+    docker compose -f "$dir/docker-compose.yml" up -d
+    print_success "$service installed and started (container: $container)"
+}
+
+# Download image only (no container)
+download_image() {
     local service="$1"
     local image="${SERVICE_IMAGE[$service]}"
     
     echo "Downloading $image..."
-    docker pull "$image"
+    docker_safe pull "$image"
     print_success "$service image downloaded"
 }
 
