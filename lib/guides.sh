@@ -23,23 +23,42 @@ EOF
     case "$SYSTEM_PM" in
         apt)
             cat >> "$guide_file" << 'EOF'
-## Step 1: Install Docker
+## Step 1: Install Docker (Recommended - Docker Official Repository)
 ```bash
+# Install prerequisites
 sudo apt update
-sudo apt install -y docker.io docker-compose-plugin
-sudo systemctl enable --now docker
+sudo apt install -y ca-certificates curl gnupg
+
+# Add Docker's official GPG key
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+# Add Docker repository
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Install Docker
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-## Step 2: Add User to Docker Group
+## Step 2: Start and Enable Docker
+```bash
+sudo systemctl start docker
+sudo systemctl enable docker
+```
+
+## Step 3: Add User to Docker Group
 ```bash
 sudo usermod -aG docker $USER
 newgrp docker
 ```
 
-## Step 3: Verify Installation
+## Step 4: Verify Installation
 ```bash
 docker --version
 docker compose version
+docker run hello-world
 ```
 
 ## Next
