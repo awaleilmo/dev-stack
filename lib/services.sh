@@ -99,13 +99,22 @@ get_service_status() {
     local service="$1"
     local container="${SERVICE_CONTAINER[$service]}"
     
-    if docker_safe ps -q -f "name=^${container}$" &>/dev/null 2>&1; then
+    # Must check OUTPUT is non-empty, not just exit code (docker returns 0 even when no match)
+    local running_id
+    running_id=$(docker_safe ps -q -f "name=${container}" 2>/dev/null)
+    if [[ -n "$running_id" ]]; then
         echo "running"
-    elif docker_safe ps -aq -f "name=^${container}$" &>/dev/null 2>&1; then
-        echo "stopped"
-    else
-        echo "not-installed"
+        return
     fi
+    
+    local stopped_id
+    stopped_id=$(docker_safe ps -aq -f "name=${container}" 2>/dev/null)
+    if [[ -n "$stopped_id" ]]; then
+        echo "stopped"
+        return
+    fi
+    
+    echo "not-installed"
 }
 
 # Check if image has update available
