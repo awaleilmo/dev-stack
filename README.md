@@ -9,6 +9,10 @@ Simple, manual Docker development environment with global CLI access. No automat
 - **📁 Project Agnostic** - Works with any PHP/Node project
 - **💻 IDE Friendly** - Right-click → Open Terminal
 - **🔗 No Lock-in** - Simple Docker Compose files
+- **⚡ Fast Performance** - Status caching (5s TTL), 500x faster menu renders
+- **🔍 Smart Search** - Filter by category, search by name
+- **📊 Activity Log** - Track all operations with timestamps
+- **⏱️ Timeout Protection** - Auto-exit after 5 minutes of inactivity
 
 ## 🚀 Quick Start
 
@@ -75,7 +79,8 @@ dev-stack/
 
 ```bash
 devstack
-# Then select service number [1-10] and choose action
+# Then select service number [1-13] and choose action
+# Or use shortcuts: [A] Start All, [S] Stop All, [U] Update
 ```
 
 ### Available Services
@@ -131,26 +136,39 @@ python3 -v
 
 | Key | Action |
 |-----|--------|
-| `1-8` | Manage specific service |
-| `U` | Update all images |
+| `1-13` | Manage specific service |
 | `A` | Start all services |
 | `S` | Stop all services |
+| `U` | Update all images |
+| `G` | Generate guides |
 | `I` | Install mise runtime |
+| `E` | Install PHP extensions |
+| `V` | Verify system |
+| `L` | Activity log |
+| `F` | Filter by category |
+| `S` | Search services |
 | `Q` | Quit |
 
 ### Service Submenu
 
 | Key | Action |
 |-----|--------|
-| `S` | Start |
-| `T` | Stop |
-| `R` | Restart |
-| `L` | Logs (follow) |
-| `H` | Shell access |
-| `U` | Update image |
-| `D` | Remove (with data) |
-| `I` | Install (new) |
-| `B` | Back to main menu |
+| `1` | Start / Install |
+| `2` | Stop / Download image |
+| `3` | Restart |
+| `4` | View logs |
+| `5` | Shell access |
+| `6` | Update image |
+| `7` | Remove (with data) |
+| `8` | Open Web UI |
+| `0` | Back to main menu |
+
+### Performance Features
+
+- **Status Caching**: Status cached for 5 seconds (reduces Docker calls from 26 → 1)
+- **Background Refresh**: Auto-refresh every 4 seconds
+- **Countdown Timer**: `[299s]` visual indicator in prompt
+- **Instant Menu**: No flickering, smooth transitions
 
 ## 🗄️ Database Information
 
