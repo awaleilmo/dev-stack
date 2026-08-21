@@ -1,0 +1,20 @@
+version: '3.8'
+
+networks:
+  dev-network:
+    external: true
+
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger-dev
+    restart: unless-stopped
+    networks:
+      - dev-network
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "${JAEGER_PORT:-16686}:16686"     # Query UI
+      - "${JAEGER_COLLECTOR_PORT:-4317}:4317"  # OTLP gRPC
+      - "${JAEGER_COLLECTOR_HTTP_PORT:-4318}:4318"  # OTLP HTTP

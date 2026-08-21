@@ -34,6 +34,12 @@ declare -g HAS_PYTHON=false
 declare -g PYTHON_VERSION=""
 declare -g HAS_COMPOSER=false
 declare -g COMPOSER_VERSION=""
+declare -g HAS_GO=false
+declare -g GO_VERSION=""
+declare -g HAS_PNPM=false
+declare -g PNPM_VERSION=""
+declare -g HAS_BUN=false
+declare -g BUN_VERSION=""
 declare -g MISSING_DEPS=()
 declare -g HAS_ENV=false
 
@@ -151,6 +157,30 @@ detect_composer() {
     fi
 }
 
+# Detect Go
+detect_go() {
+    if has_cmd go; then
+        HAS_GO=true
+        GO_VERSION="$(go version 2>/dev/null | awk '{print $3}' | sed 's/go//')"
+    fi
+}
+
+# Detect pnpm
+detect_pnpm() {
+    if has_cmd pnpm; then
+        HAS_PNPM=true
+        PNPM_VERSION="$(pnpm --version 2>/dev/null || echo 'installed')"
+    fi
+}
+
+# Detect Bun
+detect_bun() {
+    if has_cmd bun; then
+        HAS_BUN=true
+        BUN_VERSION="$(bun --version 2>/dev/null || echo 'installed')"
+    fi
+}
+
 # Detect system dependencies
 declare -gA REQUIRED_SYSTEM_DEPS=(
     [curl]=curl
@@ -224,6 +254,9 @@ detect_all() {
     detect_node
     detect_python
     detect_composer
+    detect_go
+    detect_pnpm
+    detect_bun
     detect_system_deps
 }
 
@@ -276,6 +309,25 @@ print_detection_summary() {
         echo -e "  ${GREEN}✅${NC} Composer: $COMPOSER_VERSION"
     else
         echo -e "  ${YELLOW}⬚${NC} Composer: not installed"
+    fi
+    echo ""
+    echo -e "${CYAN}Backend Runtimes:${NC}"
+    if [[ "$HAS_GO" == true ]]; then
+        echo -e "  ${GREEN}✅${NC} Go: ${GO_VERSION:-installed}"
+    else
+        echo -e "  ${YELLOW}⬚${NC} Go: not installed"
+    fi
+    echo ""
+    echo -e "${CYAN}Frontend Package Managers:${NC}"
+    if [[ "$HAS_PNPM" == true ]]; then
+        echo -e "  ${GREEN}✅${NC} pnpm: ${PNPM_VERSION:-installed}"
+    else
+        echo -e "  ${YELLOW}⬚${NC} pnpm: not installed"
+    fi
+    if [[ "$HAS_BUN" == true ]]; then
+        echo -e "  ${GREEN}✅${NC} Bun: ${BUN_VERSION:-installed}"
+    else
+        echo -e "  ${YELLOW}⬚${NC} Bun: not installed"
     fi
     echo ""
 }

@@ -335,7 +335,26 @@ handle_main_action() {
                 echo "  - Node.js ${MISE_NODE_VERSION}: $([ "$HAS_NODE" == true ] && echo "✅ ${NODE_VERSION:-installed}" || echo "⬚ belum dikonfigurasi")"
                 echo "  - Python ${MISE_PYTHON_VERSION}: $([ "$HAS_PYTHON" == true ] && echo "✅ ${PYTHON_VERSION:-installed}" || echo "⬚ belum dikonfigurasi")"
                 echo ""
-                echo "  Status Tools saat ini:"
+                echo "  Status Backend Runtimes:"
+                if [[ "$HAS_GO" == true ]]; then
+                    echo "  - Go: ✅ ${GO_VERSION:-installed}"
+                else
+                    echo "  - Go: ⬚ belum terinstall"
+                fi
+                echo ""
+                echo "  Status Frontend Package Managers:"
+                if [[ "$HAS_PNPM" == true ]]; then
+                    echo "  - pnpm: ✅ ${PNPM_VERSION:-installed}"
+                else
+                    echo "  - pnpm: ⬚ belum terinstall"
+                fi
+                if [[ "$HAS_BUN" == true ]]; then
+                    echo "  - Bun: ✅ ${BUN_VERSION:-installed}"
+                else
+                    echo "  - Bun: ⬚ belum terinstall"
+                fi
+                echo ""
+                echo "  Status Tools:"
                 if [[ "$HAS_COMPOSER" == true ]]; then
                     echo "  - Composer: ✅ ${COMPOSER_VERSION:-installed}"
                 else
@@ -343,9 +362,15 @@ handle_main_action() {
                 fi
                 echo ""
                 echo "  💡 Untuk install runtime via mise, jalankan:"
-                echo "      mise use -g php@${MISE_PHP_VERSION} node@${MISE_NODE_VERSION} python@${MISE_PYTHON_VERSION}"
+                echo "      mise use -g php@${MISE_PHP_VERSION} node@${MISE_NODE_VERSION} python@${MISE_PYTHON_VERSION} go@latest"
                 echo ""
-                echo "  💡 Untuk install Composer, jalankan:"
+                echo "  💡 Untuk install package managers:"
+                echo "      # npm (sudah ada di Node.js):"
+                echo "      npm install -g pnpm"
+                echo "      # atau Bun:"
+                echo "      curl -fsSL https://bun.sh/install | bash"
+                echo ""
+                echo "  💡 Untuk install Composer:"
                 echo "      curl -sS https://getcomposer.org/installer | php"
                 echo "      sudo mv composer.phar /usr/local/bin/composer"
                 echo ""

@@ -19,6 +19,9 @@ declare -A SERVICE_CONTAINER=(
     [meilisearch]=meilisearch-dev
     [minio]=minio-dev
     [portainer]=portainer-dev
+    [prometheus]=prometheus-dev
+    [grafana]=grafana-dev
+    [jaeger]=jaeger-dev
 )
 
 declare -A SERVICE_IMAGE=(
@@ -32,6 +35,9 @@ declare -A SERVICE_IMAGE=(
     [meilisearch]=getmeili/meilisearch:latest
     [minio]=minio/minio:latest
     [portainer]=portainer/portainer-ce:latest
+    [prometheus]=prom/prometheus:latest
+    [grafana]=grafana/grafana:latest
+    [jaeger]=jaegertracing/all-in-one:latest
 )
 
 declare -A SERVICE_PORT=(
@@ -45,6 +51,9 @@ declare -A SERVICE_PORT=(
     [meilisearch]=7700
     [minio]=9001
     [portainer]=9000
+    [prometheus]=9090
+    [grafana]=3000
+    [jaeger]=16686
 )
 
 declare -A SERVICE_DIR=(
@@ -58,6 +67,9 @@ declare -A SERVICE_DIR=(
     [meilisearch]=services/meilisearch
     [minio]=services/minio
     [portainer]=services/portainer
+    [prometheus]=services/prometheus
+    [grafana]=services/grafana
+    [jaeger]=services/jaeger
 )
 
 declare -A SERVICE_CATEGORY=(
@@ -71,6 +83,9 @@ declare -A SERVICE_CATEGORY=(
     [meilisearch]=search
     [minio]=storage
     [portainer]=tool
+    [prometheus]=monitoring
+    [grafana]=monitoring
+    [jaeger]=monitoring
 )
 
 declare -A SERVICE_LABEL=(
@@ -84,10 +99,13 @@ declare -A SERVICE_LABEL=(
     [meilisearch]=Meilisearch
     [minio]=MinIO
     [portainer]=Portainer
+    [prometheus]=Prometheus
+    [grafana]=Grafana
+    [jaeger]=Jaeger
 )
 
 # Service order for display (grouped by category)
-SERVICE_ORDER=(mysql postgres mongodb redis adminer mailpit rabbitmq meilisearch minio portainer)
+SERVICE_ORDER=(mysql postgres mongodb redis adminer mailpit rabbitmq meilisearch minio portainer prometheus grafana jaeger)
 
 # Web UI URLs for services (empty if no web UI)
 declare -A SERVICE_WEB_URL=(
@@ -101,6 +119,9 @@ declare -A SERVICE_WEB_URL=(
     [meilisearch]="http://localhost:${MEILISEARCH_PORT:-7700}"
     [minio]="http://localhost:${MINIO_CONSOLE_PORT:-9002}"
     [portainer]="http://localhost:${PORTAINER_PORT:-9000}"
+    [prometheus]="http://localhost:${PROMETHEUS_PORT:-9090}"
+    [grafana]="http://localhost:${GRAFANA_PORT:-3000}"
+    [jaeger]="http://localhost:${JAEGER_PORT:-16686}"
 )
 
 # Get current working directory
