@@ -48,7 +48,7 @@ if [[ "$HAS_DOCKER" == false ]]; then
     echo "  Please read and run the instructions in that file,"
     echo "  then run './bin/devstack' again."
     echo ""
-    read -rp "  Press Enter to exit..."
+    read -rp "  Press Enter to exit..." || true
     exit 0
 fi
 
@@ -69,7 +69,7 @@ if [[ "$HAS_MISE" == false ]]; then
     echo "  but PHP/Node.js/Python development will require"
     echo "  installing runtimes via mise or manually."
     echo ""
-    read -rp "  [R] Proceed to Main Menu  [Q] Quit: " choice
+    read -rp "  [R] Proceed to Main Menu  [Q] Quit: " choice || choice="Q"
     if [[ "${choice:-Q}" == "Q" || "${choice:-Q}" == "q" ]]; then
         exit 0
     fi

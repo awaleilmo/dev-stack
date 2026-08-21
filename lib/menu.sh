@@ -307,9 +307,18 @@ handle_main_action() {
 
 # Main menu loop
 run_menu() {
+    local choice=""
+    local action=""
+    
     while true; do
         show_main_menu
-        read -rp "" choice
+        # Handle EOF (non-interactive mode)
+        if ! read -rp "" choice; then
+            echo ""
+            echo -e "  ${GREEN}Goodbye!${NC}"
+            echo ""
+            exit 0
+        fi
         
         # Check if choice is a service number
         if [[ "$choice" =~ ^[0-9]+$ ]] && ((choice >= 1 && choice <= ${#SERVICE_ORDER[@]})); then
@@ -317,12 +326,17 @@ run_menu() {
             
             while true; do
                 show_service_menu "$service"
-                read -rp "" action
+                if ! read -rp "" action; then
+                    break 2
+                fi
                 
                 if ! handle_service_action "$service" "$action"; then
                     break
                 fi
-                read -rp "  Press Enter to continue..." 
+                echo -n "  Press Enter to continue..."
+                if ! read -r; then
+                    break 2
+                fi
             done
         elif [[ "$choice" =~ ^[UuAaSsGgIiVvQq0]$ ]]; then
             handle_main_action "$choice"
