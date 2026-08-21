@@ -176,7 +176,8 @@ remove_service() {
     echo ""
     
     local confirm=""
-    read -rp "Type 'REMOVE' to confirm: " confirm
+    echo -n "  Type 'REMOVE' to confirm: "
+    read -r confirm
     
     if [[ "$confirm" == "REMOVE" ]]; then
         docker compose -f "$dir/docker-compose.yml" down -v

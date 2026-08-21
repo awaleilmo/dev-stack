@@ -225,7 +225,8 @@ handle_main_action() {
                 echo "  💡 Buka file tersebut dengan editor: nano docker-installation.md"
             fi
             echo ""
-            read -t 60 -rp "  Press Enter to continue..." || true
+            echo -n "  Press Enter to continue..."
+            read -r || true
             ;;
         I|i)
             safe_clear
@@ -278,7 +279,8 @@ handle_main_action() {
                 echo ""
             fi
             echo ""
-            read -t 60 -rp "  Press Enter to continue..." || true
+            echo -n "  Press Enter to continue..."
+            read -r || true
             ;;
         V|v)
             # Verify system
@@ -292,7 +294,8 @@ handle_main_action() {
             echo ""
             print_detection_summary
             echo ""
-            read -t 60 -rp "  Press Enter to continue..." || true
+            echo -n "  Press Enter to continue..."
+            read -r || true
             ;;
         Q|q)
             return 2
