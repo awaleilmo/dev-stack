@@ -186,8 +186,8 @@ show_main_menu() {
     
     # Services section - grouped by category
     echo -e "  ${CYAN}Services${NC}"
-    printf "  ${VB} %-3s %-14s %-16s %-10s %-8s %-10s\n" "#" "SERVICE" "CONTAINER" "PORT" "STATUS" "CATEGORY"
-    printf "  ${VB} %-3s %-14s %-16s %-10s %-8s %-10s\n" "---" "--------------" "----------------" "--------" "--------" "----------"
+    printf "  ${VB} %-3s %-14s %-16s %-8s %-10s\n" "#" "SERVICE" "CONTAINER" "PORT" "STATUS"
+    printf "  ${VB} %-3s %-14s %-16s %-8s %-10s\n" "---" "--------------" "----------------" "--------" "----------"
     
     local num=1
     for service in "${SERVICE_ORDER[@]}"; do
@@ -201,16 +201,16 @@ show_main_menu() {
         local cat_badge
         cat_badge=$(print_category_badge "$service")
         
-        printf "  ${VB} %-3s ${icon} %-12s %-16s %-10s %-8s %b\n" \
+        printf "  ${VB} %-3s ${icon} %-12s %-16s %-8s %b %-10s\n" \
             "$num" \
             "$label" \
             "$container" \
             "$port" \
-            "$(status_text "$status")" \
-            "$cat_badge"
+            "$cat_badge" \
+            "$(status_text "$status")"
         num=$((num + 1))
     done
-    echo "  ${VB}$(printf '%0.s ' $(seq 1 70))${VB}"
+    echo "  ${VB}$(printf '%0.s ' $(seq 1 65))${VB}"
     echo ""
     
     # Service summary
@@ -238,7 +238,6 @@ show_main_menu() {
     echo -e "  ${CYAN}⚡ Quick Actions:${NC}  ${BOLD}[S]tart All${NC} | ${BOLD}[P]ause All${NC} | ${BOLD}[R]efresh${NC} | ${BOLD}[U]pdate${NC} | ${BOLD}[G]uides${NC} | ${BOLD}[Q]uit${NC}"
     echo -e "  ${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
-    echo -ne "  ${BOLD}Select service [1-${#SERVICE_ORDER[@]}] or action [0/U/A/S/G/I/E/V/Q]:${NC} "
 }
 
 # Show service submenu
@@ -620,9 +619,6 @@ run_menu() {
     
     while true; do
         show_main_menu
-        
-        # Show prompt with quick action hint
-        printf "\n  ${BOLD}Service #${NC} [1-%d] ${GRAY}or${NC} ${BOLD}Quick Action${NC} [S/P/R/U/G/Q]: " "${#SERVICE_ORDER[@]}"
         
         # Read choice with 300 second timeout
         if ! read -t 300 -r choice; then
