@@ -100,7 +100,6 @@ if [[ "$HAS_DOCKER" == false ]]; then
     echo "  Please read and run the instructions in that file,"
     echo "  then run './bin/devstack' again."
     echo ""
-    read -t 30 -rp "  Press Enter to exit..." || true
     exit 0
 fi
 
@@ -121,10 +120,8 @@ if [[ "$HAS_MISE" == false ]]; then
     echo "  but PHP/Node.js/Python development will require"
     echo "  installing runtimes via mise or manually."
     echo ""
-    read -t 30 -rp "  [R] Proceed to Main Menu  [Q] Quit: " choice || choice="Q"
-    if [[ "${choice:-Q}" == "Q" || "${choice:-Q}" == "q" ]]; then
-        exit 0
-    fi
+    echo "  Continuing to main menu..."
+    echo ""
 fi
 
 # Ensure network exists
