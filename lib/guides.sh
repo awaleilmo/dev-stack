@@ -263,6 +263,19 @@ sudo ${SYSTEM_PM} install -y ${php_deps[*]}
 \`\`\`
 
 EOF
+        else
+            # Always include common missing deps for PHP on Ubuntu
+            cat >> "$guide_file" << 'EOF'
+## Step 3: Install PHP System Dependencies (Recommended)
+
+Even if detection passed, these packages are commonly needed for PHP compilation:
+
+\`\`\`bash
+sudo apt update
+sudo apt install -y libssl-dev libzip-dev libonig-dev libxml2-dev libpng-dev libicu-dev libjpeg-dev libbz2-dev zlib1g-dev libcurl4-openssl-dev libtidy-dev
+\`\`\`
+
+EOF
         fi
         
         if [[ ${#python_deps[@]} -gt 0 ]]; then
