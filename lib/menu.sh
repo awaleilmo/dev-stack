@@ -186,8 +186,8 @@ show_main_menu() {
     
     # Services section - grouped by category
     echo -e "  ${CYAN}Services${NC}"
-    printf "  ${VB} %-3s %-14s %-16s %-8s %-10s\n" "#" "SERVICE" "CONTAINER" "PORT" "STATUS"
-    printf "  ${VB} %-3s %-14s %-16s %-8s %-10s\n" "---" "--------------" "----------------" "--------" "----------"
+    printf "  ${VB} %-3s %-14s %-16s %-8s %-10s %-10s\n" "#" "SERVICE" "CONTAINER" "PORT" "CATEGORY" "STATUS"
+    printf "  ${VB} %-3s %-14s %-16s %-8s %-10s %-10s\n" "---" "--------------" "----------------" "--------" "----------" "----------"
     
     local num=1
     for service in "${SERVICE_ORDER[@]}"; do
@@ -200,6 +200,7 @@ show_main_menu() {
         icon=$(status_icon "$status")
         local cat_badge
         cat_badge=$(print_category_badge "$service")
+        local category="${SERVICE_CATEGORY[$service]:-tool}"
         
         printf "  ${VB} %-3s ${icon} %-12s %-16s %-8s %b %-10s\n" \
             "$num" \
@@ -210,7 +211,7 @@ show_main_menu() {
             "$(status_text "$status")"
         num=$((num + 1))
     done
-    echo "  ${VB}$(printf '%0.s ' $(seq 1 65))${VB}"
+    echo "  ${VB}$(printf '%0.s ' $(seq 1 70))${VB}"
     echo ""
     
     # Service summary
