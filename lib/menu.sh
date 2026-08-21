@@ -16,7 +16,7 @@ done
 
 # Show main menu
 show_main_menu() {
-    clear
+    safe_clear
     print_header "Dev Stack Manager v1.0"
     echo ""
     
@@ -75,7 +75,7 @@ show_service_menu() {
     local status
     status=$(get_service_status "$service")
     
-    clear
+    safe_clear
     print_header "Service: $service ($status)"
     
     echo ""
@@ -176,9 +176,9 @@ handle_main_action() {
             guide_dir="$(pwd)"
             local docker_guide="$guide_dir/docker-installation.md"
             local devenv_guide="$guide_dir/development-environment-installation.md"
-            local guide_count=0
+            local             guide_count=0
             
-            clear
+            safe_clear
             print_header "Generate Installation Guides"
             echo ""
             echo "  Guides adalah file Markdown yang berisi instruksi instalasi"
@@ -228,7 +228,7 @@ handle_main_action() {
             read -rp "  Press Enter to continue..." 
             ;;
         I|i)
-            clear
+            safe_clear
             print_header "Install Mise Runtime"
             echo ""
             echo "  Action ini akan:"
@@ -282,7 +282,7 @@ handle_main_action() {
             ;;
         V|v)
             # Verify system
-            clear
+            safe_clear
             print_header "System Verification"
             echo ""
             echo "  Halaman ini menampilkan status lengkap sistem Anda:"
@@ -347,7 +347,7 @@ run_menu() {
             result=$?
             
             if [[ $result -eq 2 ]]; then
-                clear
+                safe_clear
                 echo ""
                 echo -e "  ${GREEN}Goodbye!${NC}"
                 echo ""

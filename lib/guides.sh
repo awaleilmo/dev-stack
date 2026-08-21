@@ -61,6 +61,19 @@ docker compose version
 docker run hello-world
 ```
 
+## Important: confirm the daemon is reachable
+If `docker info` prints an error about the daemon, start it first:
+```bash
+# systemd-based systems:
+sudo systemctl start docker
+# non-systemd systems (LXC / minimal VPS):
+sudo dockerd > /var/log/docker.log 2>&1 &
+sleep 3
+docker info
+```
+Then run `./bin/devstack` again. If Docker is still not detected, run
+`./bin/devstack --check` to see the exact failure.
+
 ## Next
 Run `./bin/devstack` again after Docker is installed.
 EOF
@@ -276,20 +289,12 @@ sudo chmod +x /usr/local/bin/composer
 ```bash
 php -v
 node -v
-python3 -v
-composer --version
-```
-
-## Step 5: Verify Installation
-```bash
-php -v
-node -v
-python3 -v
+python3 --version
 composer --version
 ```
 
 ## Next
-Run `./bin/devstack` again after the development environment is set up.
+Run \`./bin/devstack\` again after the development environment is set up.
 EOF
     
     echo "$guide_file"

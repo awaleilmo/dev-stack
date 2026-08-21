@@ -8,7 +8,7 @@ else
     return 0
 fi
 
-set -euo pipefail
+set -uo pipefail
 
 # Colors for output
 RED='\033[0;31m'
@@ -81,9 +81,9 @@ detect_pm() {
 # Detect Docker
 detect_docker() {
     if has_cmd docker; then
-        if docker info &>/dev/null 2>&1; then
+        if docker_safe info &>/dev/null 2>&1; then
             HAS_DOCKER=true
-            DOCKER_VERSION="$(docker --version 2>/dev/null | sed -E 's/.* ([0-9]+\.[0-9]+\.[0-9]+).*/\1/')"
+            DOCKER_VERSION="$(docker_safe --version 2>/dev/null | sed -E 's/.* ([0-9]+\.[0-9]+\.[0-9]+).*/\1/')"
             if [[ -z "$DOCKER_VERSION" ]]; then
                 DOCKER_VERSION="installed"
             fi

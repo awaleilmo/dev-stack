@@ -3,6 +3,9 @@
 
 set -uo pipefail
 
+# Restore terminal sanity on exit/interrupt so a broken state can't persist
+trap 'stty sane >/dev/null 2>&1 || true' EXIT INT TERM
+
 # Resolve the actual script location, following symlinks
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")"
 SCRIPT_DIR="$(dirname "$SCRIPT_PATH")"
@@ -29,6 +32,18 @@ fi
 # Run detection
 detect_all
 
+# Non-hanging diagnostic mode (safe for server troubleshooting)
+if [[ "${1:-}" == "--check" || "${1:-}" == "-c" ]]; then
+    safe_clear 2>/dev/null || true
+    print_header "Dev Stack — System Check"
+    echo ""
+    print_detection_summary
+    echo ""
+    echo -e "  ${CYAN}Docker daemon reachable:${NC} $(docker_safe info >/dev/null 2>&1 && echo -e "${GREEN}yes${NC}" || echo -e "${RED}no${NC}")"
+    echo ""
+    exit 0
+fi
+
 # Guide paths
 DOCKER_GUIDE="docker-installation.md"
 DEVENV_GUIDE="development-environment-installation.md"
@@ -37,7 +52,7 @@ DEVENV_GUIDE="development-environment-installation.md"
 if [[ "$HAS_DOCKER" == false ]]; then
     ensure_network &>/dev/null || true
     guide_file=$(generate_docker_guide "$DOCKER_GUIDE")
-    clear
+    safe_clear 2>/dev/null || true
     print_header "Prerequisites Not Met"
     echo ""
     echo "  Docker is not installed on this system."
@@ -55,7 +70,7 @@ fi
 # Check mise - non-fatal, generate guide but continue
 if [[ "$HAS_MISE" == false ]]; then
     guide_file=$(generate_devenv_guide "$DEVENV_GUIDE")
-    clear
+    safe_clear 2>/dev/null || true
     print_header "Development Runtime Not Available"
     echo ""
     echo "  mise (tool installer) is not installed."

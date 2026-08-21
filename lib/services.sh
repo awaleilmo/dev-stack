@@ -86,8 +86,8 @@ get_devstack_dir() {
 
 # Ensure dev-network exists
 ensure_network() {
-    if ! docker network inspect dev-network &>/dev/null 2>&1; then
-        docker network create dev-network
+    if ! docker_safe network inspect dev-network &>/dev/null 2>&1; then
+        docker_safe network create dev-network >/dev/null 2>&1 || true
         print_success "Network 'dev-network' created"
     else
         print_info "Network 'dev-network' already exists"
@@ -99,9 +99,9 @@ get_service_status() {
     local service="$1"
     local container="${SERVICE_CONTAINER[$service]}"
     
-    if docker ps -q -f "name=^${container}$" &>/dev/null 2>&1; then
+    if docker_safe ps -q -f "name=^${container}$" &>/dev/null 2>&1; then
         echo "running"
-    elif docker ps -aq -f "name=^${container}$" &>/dev/null 2>&1; then
+    elif docker_safe ps -aq -f "name=^${container}$" &>/dev/null 2>&1; then
         echo "stopped"
     else
         echo "not-installed"
@@ -131,7 +131,7 @@ check_image_update() {
 # Get container runtime (how long it's been running)
 get_container_runtime() {
     local container="$1"
-    docker ps -f "name=^${container}$" --format '{{.RunningFor}}' 2>/dev/null || echo ""
+    docker_safe ps -f "name=^${container}$" --format '{{.RunningFor}}' 2>/dev/null || echo ""
 }
 
 # Start service

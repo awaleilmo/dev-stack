@@ -79,6 +79,22 @@ print_prompt() {
     echo -ne "${BOLD}${WHITE}$1${NC}"
 }
 
+# Safe clear - never hang or fail even on a broken terminal
+safe_clear() {
+    clear >/dev/null 2>&1 || printf '\033[2J\033[3J\033[H' >/dev/null 2>&1 || true
+}
+
+# Timeout-wrapped docker for non-interactive calls (detection, status, network)
+# so the CLI never hangs if the Docker daemon is unreachable or stuck.
+# Interactive calls (logs -f, exec -it, up -d) are NOT wrapped on purpose.
+docker_safe() {
+    if command -v timeout >/dev/null 2>&1; then
+        command timeout 20 docker "$@"
+    else
+        command docker "$@"
+    fi
+}
+
 # Print service status icon
 status_icon() {
     local status="$1"
