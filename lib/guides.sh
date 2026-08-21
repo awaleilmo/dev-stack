@@ -277,7 +277,7 @@ EOF
         fi
     fi
     
-    cat >> "$guide_file" << EOF
+    cat >> "$guide_file" << 'EOF'
 ## Step 4: Install Composer
 ```bash
 curl -sS https://getcomposer.org/installer | php
