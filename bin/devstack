@@ -17,7 +17,13 @@ source "$PROJECT_ROOT/lib/detect.sh" || { echo "Error: Failed to load detect.sh"
 source "$PROJECT_ROOT/lib/ui.sh" || { echo "Error: Failed to load ui.sh" >&2; exit 1; }
 source "$PROJECT_ROOT/lib/services.sh" || { echo "Error: Failed to load services.sh" >&2; exit 1; }
 source "$PROJECT_ROOT/lib/guides.sh" || { echo "Error: Failed to load guides.sh" >&2; exit 1; }
+source "$PROJECT_ROOT/lib/php_ext.sh" || { echo "Error: Failed to load php_ext.sh" >&2; exit 1; }
 source "$PROJECT_ROOT/lib/menu.sh" || { echo "Error: Failed to load menu.sh" >&2; exit 1; }
+
+# The sourced libs turn on 'set -e' on their own; disable errexit here so a
+# transient command failure (e.g. composer/php momentarily missing) does NOT
+# abort the whole CLI before the menu even opens. Keep -u/-o pipefail.
+set +e
 
 # Change to project root for docker compose commands
 cd "$PROJECT_ROOT" 2>/dev/null || { echo "Error: Cannot change to project root: $PROJECT_ROOT" >&2; exit 1; }

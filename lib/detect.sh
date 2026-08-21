@@ -107,7 +107,8 @@ detect_php() {
     if [[ "$HAS_MISE" == true ]]; then
         local mise_output
         mise_output="$(mise current php 2>/dev/null || true)"
-        if [[ -n "$mise_output" ]] && echo "$mise_output" | grep -qE "^${MISE_PHP_VERSION}"; then
+        if [[ -n "$mise_output" ]] && echo "$mise_output" | grep -qE "^${MISE_PHP_VERSION}" \
+            && command -v php >/dev/null 2>&1; then
             HAS_PHP=true
             PHP_VERSION="$(php -v 2>/dev/null | head -1 | awk '{print $2}' || true)"
         fi
