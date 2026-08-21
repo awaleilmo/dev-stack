@@ -88,6 +88,17 @@ declare -A SERVICE_CATEGORY=(
     [jaeger]=monitoring
 )
 
+# Category display names
+declare -A CATEGORY_NAME=(
+    [database]="Database"
+    [cache]="Cache"
+    [queue]="Queue"
+    [search]="Search"
+    [storage]="Storage"
+    [monitoring]="Monitoring"
+    [tool]="Tool"
+)
+
 declare -A SERVICE_LABEL=(
     [mysql]=MySQL
     [postgres]=PostgreSQL

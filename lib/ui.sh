@@ -143,3 +143,70 @@ status_text() {
         *)         echo -e "${GRAY}unknown${NC}" ;;
     esac
 }
+
+# Loading spinner animation
+loading_spinner() {
+    local pid="$1"
+    local delay=0.1
+    local spinstr='|/-\'
+    
+    while kill -0 "$pid" 2>/dev/null; do
+        local temp="${spinstr#?}"
+        printf "  ${GRAY}[${spinstr:0:1}]${NC} Loading..."
+        printf "\r"
+        spinstr=${temp}${spinstr:0:1}
+        sleep "$delay"
+    done
+    printf "  ${GRAY} [ ]${NC} Done!     \r"
+    sleep 0.2
+}
+
+# Print loading message with spinner
+print_loading() {
+    local message="$1"
+    local pid
+    # Run the actual command in background
+    "$@" &
+    pid=$!
+    
+    printf "  ${CYAN}${message}${NC} "
+    loading_spinner "$pid"
+    wait "$pid"
+    return $?
+}
+
+# Get color based on service category
+category_color() {
+    local service="$1"
+    local category="${SERVICE_CATEGORY[$service]:-tool}"
+    
+    case "$category" in
+        database)   echo -e "${BLUE}" ;;
+        cache)      echo -e "${GREEN}" ;;
+        queue)      echo -e "${YELLOW}" ;;
+        search)     echo -e "${CYAN}" ;;
+        storage)    echo -e "${MAGENTA:-\033[0;35m}" ;;
+        monitoring) echo -e "${RED}" ;;
+        tool)       echo -e "${WHITE}" ;;
+        *)          echo -e "${GRAY}" ;;
+    esac
+}
+
+# Print colored category badge
+print_category_badge() {
+    local service="$1"
+    local category="${SERVICE_CATEGORY[$service]:-tool}"
+    local color
+    color=$(category_color "$service")
+    
+    case "$category" in
+        database)   echo -e "${color}[DB]${NC}" ;;
+        cache)      echo -e "${color}[CACHE]${NC}" ;;
+        queue)      echo -e "${color}[QUEUE]${NC}" ;;
+        search)     echo -e "${color}[SEARCH]${NC}" ;;
+        storage)    echo -e "${color}[STORAGE]${NC}" ;;
+        monitoring) echo -e "${color}[MONITOR]${NC}" ;;
+        tool)       echo -e "${color}[TOOL]${NC}" ;;
+        *)          echo -e "${GRAY}[?]${NC}" ;;
+    esac
+}

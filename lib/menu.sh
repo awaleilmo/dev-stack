@@ -186,8 +186,8 @@ show_main_menu() {
     
     # Services section - grouped by category
     echo -e "  ${CYAN}Services${NC}"
-    printf "  ${VB} %-3s %-14s %-16s %-12s %-8s\n" "#" "SERVICE" "CONTAINER" "PORT" "STATUS"
-    printf "  ${VB} %-3s %-14s %-16s %-12s %-8s\n" "---" "--------------" "----------------" "--------" "--------"
+    printf "  ${VB} %-3s %-14s %-16s %-10s %-8s %-10s\n" "#" "SERVICE" "CONTAINER" "PORT" "STATUS" "CATEGORY"
+    printf "  ${VB} %-3s %-14s %-16s %-10s %-8s %-10s\n" "---" "--------------" "----------------" "--------" "--------" "----------"
     
     local num=1
     for service in "${SERVICE_ORDER[@]}"; do
@@ -198,16 +198,19 @@ show_main_menu() {
         local port="${SERVICE_PORT[$service]}"
         local icon
         icon=$(status_icon "$status")
+        local cat_badge
+        cat_badge=$(print_category_badge "$service")
         
-        printf "  ${VB} %-3s ${icon} %-12s %-16s %-12s %-8s\n" \
+        printf "  ${VB} %-3s ${icon} %-12s %-16s %-10s %-8s %b\n" \
             "$num" \
             "$label" \
             "$container" \
             "$port" \
-            "$(status_text "$status")"
+            "$(status_text "$status")" \
+            "$cat_badge"
         num=$((num + 1))
     done
-    echo "  ${VB}$(printf '%0.s ' $(seq 1 62))${VB}"
+    echo "  ${VB}$(printf '%0.s ' $(seq 1 70))${VB}"
     echo ""
     
     # Service summary
@@ -224,9 +227,16 @@ show_main_menu() {
     echo -e "  ${VB} [A] Start All Services${NC}     - Jalankan semua service yang sudah terinstall"
     echo -e "  ${VB} [S] Stop All Services${NC}      - Hentikan semua container yang berjalan"
     echo -e "  ${VB} [G] Generate Guides${NC}        - Buat panduan instalasi (jika ada yang missing)"
-    echo -e "  ${VB} [I] Install Mise Runtime${NC}  - Cek & buat panduan install mise + PHP/Node/Python"
+    echo -e "  ${VB} [I] Install Mise Runtime${NC}   - Cek & buat panduan install mise + PHP/Node/Python"
     echo -e "  ${VB} [E] Install PHP Extensions${NC} - Pasang ekstensi PHP via pecl (butuh PHP aktif)"
     echo -e "  ${VB} [V] Verify System${NC}          - Tampilkan status lengkap sistem & runtime"
+    echo -e "  ${VB} [Q] Quit${NC}                   - Keluar dari aplikasi"
+    echo ""
+    
+    # Quick Actions Bar (always visible at bottom)
+    echo -e "  ${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "  ${CYAN}⚡ Quick Actions:${NC}  ${BOLD}[S]tart All${NC} | ${BOLD}[P]ause All${NC} | ${BOLD}[R]efresh${NC} | ${BOLD}[U]pdate${NC} | ${BOLD}[G]uides${NC} | ${BOLD}[Q]uit${NC}"
+    echo -e "  ${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
     echo -ne "  ${BOLD}Select service [1-${#SERVICE_ORDER[@]}] or action [0/U/A/S/G/I/E/V/Q]:${NC} "
 }
@@ -326,42 +336,66 @@ handle_main_action() {
     case "$action" in
         U|u)
             echo ""
-            echo "Pulling all images..."
+            echo "  ${CYAN}Pulling all images...${NC}"
             echo ""
+            local updated=0
             for service in "${SERVICE_ORDER[@]}"; do
                 local status
                 status=$(get_service_status "$service")
                 if [[ "$status" != "not-installed" ]]; then
-                    echo -n "  $service: "
-                    docker compose -f "${SERVICE_DIR[$service]}/docker-compose.yml" pull 2>&1 | tail -1
+                    printf "  ${GRAY}[%s]${NC} " "$service"
+                    if docker compose -f "${SERVICE_DIR[$service]}/docker-compose.yml" pull 2>&1 | grep -q "Pull complete\|Already up to date"; then
+                        echo -e "${GREEN}✓${NC}"
+                        ((updated++))
+                    else
+                        echo -e "${YELLOW}skipped${NC}"
+                    fi
                 fi
             done
             echo ""
-            print_success "All images updated"
+            print_success "$updated image(s) updated"
             ;;
         A|a)
             echo ""
-            echo "Starting all services..."
+            echo "  ${CYAN}Starting all services...${NC}"
             echo ""
+            local started=0
             for service in "${SERVICE_ORDER[@]}"; do
                 local status
                 status=$(get_service_status "$service")
                 if [[ "$status" != "not-installed" ]]; then
-                    start_service "$service"
+                    printf "  ${GRAY}[%s]${NC} " "$service"
+                    if start_service "$service" 2>/dev/null; then
+                        echo -e "${GREEN}✓${NC}"
+                        ((started++))
+                    else
+                        echo -e "${RED}✗${NC}"
+                    fi
                 fi
             done
+            echo ""
+            print_success "$started service(s) started"
             ;;
         S|s)
             echo ""
-            echo "Stopping all services..."
+            echo "  ${CYAN}Stopping all services...${NC}"
             echo ""
+            local stopped=0
             for service in "${SERVICE_ORDER[@]}"; do
                 local status
                 status=$(get_service_status "$service")
                 if [[ "$status" == "running" ]]; then
-                    stop_service "$service"
+                    printf "  ${GRAY}[%s]${NC} " "$service"
+                    if stop_service "$service" 2>/dev/null; then
+                        echo -e "${GREEN}✓${NC}"
+                        ((stopped++))
+                    else
+                        echo -e "${RED}✗${NC}"
+                    fi
                 fi
             done
+            echo ""
+            print_success "$stopped service(s) stopped"
             ;;
         G|g)
             safe_clear
@@ -424,7 +458,7 @@ handle_main_action() {
             
             # Show current guide files
             echo ""
-            echo "  ${CYAN}Guide Files Status:${NC}"
+            echo -e "  ${CYAN}Guide Files Status:${NC}"
             if guide_exists "$docker_guide"; then
                 local lines
                 lines=$(wc -l < "$docker_guide" 2>/dev/null || echo "?")
@@ -572,6 +606,7 @@ run_menu() {
     local choice=""
     local action=""
     local result=0
+    local quick_action=""
     
     # Ensure we're in the right directory
     cd "$(dirname "${BASH_SOURCE[0]}")/.." 2>/dev/null || true
@@ -585,12 +620,49 @@ run_menu() {
     
     while true; do
         show_main_menu
-        # Read with timeout so it never hangs forever
-        if ! read -r choice; then
+        
+        # Show prompt with quick action hint
+        printf "\n  ${BOLD}Service #${NC} [1-%d] ${GRAY}or${NC} ${BOLD}Quick Action${NC} [S/P/R/U/G/Q]: " "${#SERVICE_ORDER[@]}"
+        
+        # Read choice with 300 second timeout
+        if ! read -t 300 -r choice; then
             echo ""
-            echo -e "  ${GREEN}Goodbye!${NC}"
+            echo -e "  ${CYAN}No input for 5 minutes. Goodbye!${NC}"
             echo ""
             return 0
+        fi
+        
+        # Handle empty input
+        if [[ -z "$choice" ]]; then
+            continue
+        fi
+        
+        # Handle quick actions (single character)
+        if [[ "$choice" =~ ^[sSpPrRuUgGqQ0]$ ]]; then
+            local quick_key="${choice,,}"  # lowercase
+            case "$quick_key" in
+                s|S) choice="A" ;;  # Start All
+                p|P) choice="S" ;;  # Stop All (Pause)
+                r|R) 
+                    # Refresh - just show menu again
+                    continue 
+                    ;;
+                u|U) choice="U" ;;
+                g|G) choice="G" ;;
+                q|Q) choice="Q" ;;
+                0) choice="0" ;;
+            esac
+            handle_main_action "$choice"
+            result=$?
+            if [[ $result -eq 2 ]]; then
+                safe_clear
+                echo ""
+                echo -e "  ${GREEN}Goodbye!${NC}"
+                echo ""
+                return 0
+            fi
+            sleep 1
+            continue
         fi
         
         # Check if choice is a service number
@@ -636,7 +708,7 @@ run_menu() {
             fi
             sleep 1
         else
-            print_error "Invalid choice. Use [1-${#SERVICE_ORDER[@]}] for services, [0] for back, or [U/A/S/G/I/V/Q] for actions"
+            print_error "Invalid choice. Use [1-${#SERVICE_ORDER[@]}] for services, [0] for back, or [S/P/R/U/G/Q] for quick actions"
             sleep 2
         fi
     done
