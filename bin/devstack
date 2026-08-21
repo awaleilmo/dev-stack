@@ -32,6 +32,28 @@ fi
 # Run detection
 detect_all
 
+# Help mode
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+    echo "Dev Stack CLI"
+    echo ""
+    echo "Usage: devstack [options]"
+    echo ""
+    echo "Options:"
+    echo "  --check, -c    Run system check and exit"
+    echo "  --reset, -r    Reset terminal state and exit"
+    echo "  --help, -h     Show this help"
+    echo ""
+    echo "With no options, starts the interactive menu."
+    exit 0
+fi
+
+# Reset terminal mode (useful if terminal got stuck from a previous run)
+if [[ "${1:-}" == "--reset" || "${1:-}" == "-r" ]]; then
+    restore_terminal
+    echo "Terminal reset. If it still looks broken, run: reset"
+    exit 0
+fi
+
 # Non-hanging diagnostic mode (safe for server troubleshooting)
 if [[ "${1:-}" == "--check" || "${1:-}" == "-c" ]]; then
     safe_clear 2>/dev/null || true
@@ -63,7 +85,7 @@ if [[ "$HAS_DOCKER" == false ]]; then
     echo "  Please read and run the instructions in that file,"
     echo "  then run './bin/devstack' again."
     echo ""
-    read -rp "  Press Enter to exit..." || true
+    read -t 30 -rp "  Press Enter to exit..." || true
     exit 0
 fi
 
@@ -84,7 +106,7 @@ if [[ "$HAS_MISE" == false ]]; then
     echo "  but PHP/Node.js/Python development will require"
     echo "  installing runtimes via mise or manually."
     echo ""
-    read -rp "  [R] Proceed to Main Menu  [Q] Quit: " choice || choice="Q"
+    read -t 30 -rp "  [R] Proceed to Main Menu  [Q] Quit: " choice || choice="Q"
     if [[ "${choice:-Q}" == "Q" || "${choice:-Q}" == "q" ]]; then
         exit 0
     fi

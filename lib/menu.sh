@@ -225,7 +225,7 @@ handle_main_action() {
                 echo "  💡 Buka file tersebut dengan editor: nano docker-installation.md"
             fi
             echo ""
-            read -rp "  Press Enter to continue..." 
+            read -t 60 -rp "  Press Enter to continue..." || true
             ;;
         I|i)
             safe_clear
@@ -278,7 +278,7 @@ handle_main_action() {
                 echo ""
             fi
             echo ""
-            read -rp "  Press Enter to continue..." 
+            read -t 60 -rp "  Press Enter to continue..." || true
             ;;
         V|v)
             # Verify system
@@ -292,7 +292,7 @@ handle_main_action() {
             echo ""
             print_detection_summary
             echo ""
-            read -rp "  Press Enter to continue..." 
+            read -t 60 -rp "  Press Enter to continue..." || true
             ;;
         Q|q)
             return 2
@@ -323,8 +323,8 @@ run_menu() {
     
     while true; do
         show_main_menu
-        # Handle EOF (non-interactive mode)
-        if ! read -rp "" choice; then
+        # Read with timeout so it never hangs forever
+        if ! read -t 300 -rp "" choice; then
             echo ""
             echo -e "  ${GREEN}Goodbye!${NC}"
             echo ""
@@ -337,7 +337,7 @@ run_menu() {
             
             while true; do
                 show_service_menu "$service"
-                if ! read -rp "" action; then
+                if ! read -t 300 -rp "" action; then
                     return 0
                 fi
                 
@@ -345,7 +345,7 @@ run_menu() {
                     break
                 fi
                 echo -n "  Press Enter to continue..."
-                if ! read -r; then
+                if ! read -t 60 -r; then
                     return 0
                 fi
             done

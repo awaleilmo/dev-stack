@@ -91,10 +91,21 @@ is_interactive() {
 
 # Restore terminal to sane state
 restore_terminal() {
+    # Reset terminal line discipline to sane defaults
     stty sane >/dev/null 2>&1 || true
+    stty echo >/dev/null 2>&1 || true
+    stty icanon >/dev/null 2>&1 || true
+    stty icrnl >/dev/null 2>&1 || true
     # Reset any terminal attributes that might be messed up
     tput sgr0 >/dev/null 2>&1 || true
     tput cnorm >/dev/null 2>&1 || true
+    tput rmcup >/dev/null 2>&1 || true
+    # Reset color
+    printf '\033[0m' >/dev/null 2>&1 || true
+    # Reset cursor
+    printf '\033[?25h' >/dev/null 2>&1 || true
+    # Reset scroll region
+    printf '\033[r' >/dev/null 2>&1 || true
 }
 
 # Timeout-wrapped docker for non-interactive calls (detection, status, network)
