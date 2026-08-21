@@ -266,19 +266,20 @@ EOF
         fi
         # ALWAYS include the comprehensive list - mise PHP compile is fragile
         cat >> "$guide_file" << 'EOF'
-## Step 3: Install Comprehensive PHP System Dependencies
+## Step 3: Install ALL PHP System Dependencies (REQUIRED)
 
-Mise compiles PHP from source, which requires MANY system libraries.
-Even if some packages are already installed, run this to ensure everything is present:
+Mise compiles PHP from source. This step is **critical** — missing any package will cause compilation to fail.
 
+### 3a. Install build tools
 \`\`\`bash
 sudo apt update
+sudo apt install -y build-essential autoconf automake bison pkg-config
+\`\`\`
+
+### 3b. Install PHP library dependencies
+
+\`\`\`bash
 sudo apt install -y \
-  build-essential \
-  autoconf \
-  automake \
-  bison \
-  pkg-config \
   libssl-dev \
   libzip-dev \
   libonig-dev \
@@ -304,27 +305,31 @@ sudo apt install -y \
   libdb-dev \
   librevop-dev \
   libldb-dev \
-  libmcrypt-dev
+  libmcrypt-dev \
+  libgd-dev \
+  libxslt1-dev
 \`\`\`
 
-### Alternative: Use pre-compiled PHP (FASTER, more reliable)
+**PENTING:** `libgd-dev` adalah yang paling sering terlewat — ini required untuk GD extension.
 
-If compiling via mise fails, use this simpler approach instead:
+### 3c. Troubleshooting — Jika masih error
 
+Error yang sering muncul dan solusinya:
+
+| Error | Package yang kurang |
+|-------|---------------------|
+| `gdlib >= 2.1.0 not found` | \`sudo apt install -y libgd-dev\` |
+| `freetype2 not found` | \`sudo apt install -y libfreetype6-dev\` |
+| `libwebp not found` | \`sudo apt install -y libwebp-dev\` |
+| `libsodium not found` | \`sudo apt install -y libsodium-dev\` |
+| `sqlite3 >= 3.7.7 not found` | \`sudo apt install -y libsqlite3-dev\` |
+| `onigmo not found` | \`sudo apt install -y libonig-dev\` |
+
+Setelah install package yang hilang, coba lagi:
 \`\`\`bash
-# Add Ondrej PHP PPA (pre-compiled, no build needed)
-sudo apt install -y software-properties-common
-sudo add-apt-repository -y ppa:ondrej/php
-sudo apt update
-sudo apt install -y php8.3 php8.3-cli php8.3-common php8.3-mysql php8.3-pgsql \
-  php8.3-sqlite3 php8.3-curl php8.3-gd php8.3-mbstring php8.3-xml \
-  php8.3-bcmath php8.3-zip php8.3-intl php8.3-redis php8.3-mongodb
-
-# Make PHP 8.3 default
-sudo update-alternatives --set php /usr/bin/php8.3
+mise use -g php@${MISE_PHP_VERSION}
 \`\`\`
 
-Then skip Step 4 and go straight to Composer installation.
 EOF
         
         if [[ ${#python_deps[@]} -gt 0 ]]; then
