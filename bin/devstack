@@ -166,13 +166,12 @@ if ! is_interactive; then
     exit 1
 fi
 
-# Startup banner - always visible
-clear
+# Startup banner - shown once before menu
 echo ""
 echo -e "  ${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "  ${GREEN}🐳  Dev Stack Manager v1.0  -  Starting...${NC}"
 echo -e "  ${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
-# Start menu
+# Start menu (menu handles its own clearing)
 run_menu

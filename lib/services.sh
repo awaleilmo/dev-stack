@@ -86,8 +86,22 @@ declare -A SERVICE_LABEL=(
     [portainer]=Portainer
 )
 
-# Service order for display
+# Service order for display (grouped by category)
 SERVICE_ORDER=(mysql postgres mongodb redis adminer mailpit rabbitmq meilisearch minio portainer)
+
+# Web UI URLs for services (empty if no web UI)
+declare -A SERVICE_WEB_URL=(
+    [mysql]=""
+    [postgres]=""
+    [mongodb]=""
+    [redis]=""
+    [adminer]="http://localhost:${ADMINER_PORT:-8081}"
+    [mailpit]="http://localhost:8026"
+    [rabbitmq]="http://localhost:${RABBITMQ_MANAGEMENT_PORT:-15672}"
+    [meilisearch]="http://localhost:${MEILISEARCH_PORT:-7700}"
+    [minio]="http://localhost:${MINIO_CONSOLE_PORT:-9002}"
+    [portainer]="http://localhost:${PORTAINER_PORT:-9000}"
+)
 
 # Get current working directory
 get_devstack_dir() {

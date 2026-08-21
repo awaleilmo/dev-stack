@@ -14,9 +14,21 @@ for i in "${!SERVICE_ORDER[@]}"; do
     SERVICE_NUMBER["${SERVICE_ORDER[$i]}"]=$((i + 1))
 done
 
+# Count services by status
+count_services_by_status() {
+    local status="$1"
+    local count=0
+    for service in "${SERVICE_ORDER[@]}"; do
+        local svc_status
+        svc_status=$(get_service_status "$service")
+        [[ "$svc_status" == "$status" ]] && ((count++))
+    done
+    echo "$count"
+}
+
 # Show main menu
 show_main_menu() {
-    safe_clear
+    # Don't clear here - let the caller handle it to avoid flickering
     print_header "Dev Stack Manager v1.0"
     echo ""
     
@@ -32,29 +44,43 @@ show_main_menu() {
     else
         echo -e "  ${VB} ${RED}❌${NC} mise: not installed${NC}  [G] generate guide"
     fi
+    if [[ "$HAS_ENV" == true ]]; then
+        echo -e "  ${VB} ${GREEN}✅${NC} .env: configured${NC}"
+    else
+        echo -e "  ${VB} ${YELLOW}⚠️${NC} .env: not found${NC}  [G] generate guide"
+    fi
     echo ""
     
-    # Services section
+    # Services section - grouped by category
     echo -e "  ${CYAN}Services${NC}"
-    printf "  ${VB} %-4s %-12s %-15s %-8s\n" "#" "SERVICE" "STATUS" "PORT"
-    printf "  ${VB} %-4s %-12s %-15s %-8s\n" "----" "----------" "--------------" "-----"
+    printf "  ${VB} %-4s %-15s %-15s %-8s\n" "#" "SERVICE" "STATUS" "PORT"
+    printf "  ${VB} %-4s %-15s %-15s %-8s\n" "----" "---------------" "---------------" "------"
     
     local num=1
     for service in "${SERVICE_ORDER[@]}"; do
         local status
         status=$(get_service_status "$service")
+        local label="${SERVICE_LABEL[$service]}"
         local port="${SERVICE_PORT[$service]}"
         local icon
         icon=$(status_icon "$status")
         
-        printf "  ${VB} %-4s ${icon} %-10s %-15s %-8s\n" \
+        printf "  ${VB} %-4s ${icon} %-13s %-15s %-8s\n" \
             "$num" \
-            "$service" \
+            "$label" \
             "$(status_text "$status")" \
             "$port"
         num=$((num + 1))
     done
-    echo "  ${VB}$(printf '%0.s ' $(seq 1 48))${VB}"
+    echo "  ${VB}$(printf '%0.s ' $(seq 1 52))${VB}"
+    echo ""
+    
+    # Service summary
+    local running stopped not_installed
+    running=$(count_services_by_status "running")
+    stopped=$(count_services_by_status "stopped")
+    not_installed=$(count_services_by_status "not-installed")
+    echo -e "  ${GRAY}Summary: ${running} running, ${stopped} stopped, ${not_installed} not installed${NC}"
     echo ""
     
     # Actions section
@@ -67,7 +93,7 @@ show_main_menu() {
     echo -e "  ${VB} [E] Install PHP Extensions${NC} - Pasang ekstensi PHP via pecl (butuh PHP aktif)"
     echo -e "  ${VB} [V] Verify System${NC}          - Tampilkan status lengkap sistem & runtime"
     echo ""
-    echo -ne "  ${BOLD}Select service [1-10] or action [0-9/U/A/S/G/I/E/V/Q]:${NC} "
+    echo -ne "  ${BOLD}Select service [1-${#SERVICE_ORDER[@]}] or action [0/U/A/S/G/I/E/V/Q]:${NC} "
 }
 
 # Show service submenu
@@ -75,15 +101,20 @@ show_service_menu() {
     local service="$1"
     local status
     status=$(get_service_status "$service")
+    local label="${SERVICE_LABEL[$service]}"
+    local web_url="${SERVICE_WEB_URL[$service]:-}"
     
     safe_clear
-    print_header "Service: $service ($status)"
+    print_header "Service: $label ($status)"
     
     echo ""
     echo -e "  ${CYAN}Details${NC}"
     echo "  Image: ${SERVICE_IMAGE[$service]}"
     echo "  Container: ${SERVICE_CONTAINER[$service]}"
     echo "  Port: ${SERVICE_PORT[$service]}"
+    if [[ -n "$web_url" ]]; then
+        echo -e "  Web UI: ${CYAN}${web_url}${NC}"
+    fi
     echo ""
     
     echo -e "  ${CYAN}Actions${NC}"
@@ -99,6 +130,9 @@ show_service_menu() {
         echo "  [5] Shell           - Masuk ke container bash"
         echo "  [6] Update Image    - Pull image baru & restart container"
         echo "  [7] Remove          - Hapus container & data (destructive)"
+        if [[ -n "$web_url" ]]; then
+            echo "  [8] Open Web UI     - Buka ${label} di browser"
+        fi
     fi
     echo ""
     echo "  [0] Back to Main Menu"
@@ -135,6 +169,14 @@ handle_service_action() {
         5) enter_shell "$service" ;;
         6) update_service "$service" ;;
         7) remove_service "$service" ;;
+        8)
+            local web_url="${SERVICE_WEB_URL[$service]:-}"
+            if [[ -n "$web_url" ]]; then
+                xdg-open "$web_url" 2>/dev/null || open "$web_url" 2>/dev/null || echo "Please open: $web_url"
+            else
+                print_warning "No Web UI available for this service"
+            fi
+            ;;
         0) return 1 ;;
         *) print_error "Invalid choice"; sleep 1 ;;
     esac
@@ -192,6 +234,7 @@ handle_main_action() {
             guide_dir="$(pwd)"
             local docker_guide="$guide_dir/docker-installation.md"
             local devenv_guide="$guide_dir/development-environment-installation.md"
+            local env_guide="$guide_dir/ENV-CONFIGURATION.md"
             local guide_count=0
             
             safe_clear
@@ -233,8 +276,21 @@ handle_main_action() {
                 echo "  ℹ️  mise sudah terinstall - tidak perlu guide"
             fi
             
+            if [[ "$HAS_ENV" == false ]]; then
+                echo ""
+                echo "  ┌─────────────────────────────────────────────────────────┐"
+                echo "  │ Environment Configuration Guide                         │"
+                echo "  │   Instruksi: cp .env.example .env && nano .env          │"
+                echo "  │   Status: ❌ Belum dikonfigurasi                         │"
+                echo "  └─────────────────────────────────────────────────────────┘"
+                echo "  ✅ Salin file: cp .env.example .env"
+                echo "  ✅ Edit file:  nano .env"
+            else
+                echo "  ℹ️  .env sudah terkonfigurasi"
+            fi
+            
             echo ""
-            if [[ $guide_count -eq 0 ]]; then
+            if [[ $guide_count -eq 0 && "$HAS_ENV" == true ]]; then
                 echo "  Semua dependency sudah terinstall. Tidak ada guide yang perlu dibuat."
             else
                 echo "  📁 Lokasi guide: $(pwd)/"
@@ -308,7 +364,7 @@ handle_main_action() {
             echo ""
             echo "  Halaman ini menampilkan status lengkap sistem Anda:"
             echo "  - OS & Package Manager"
-            echo "  - Prerequisites (Docker, mise)"
+            echo "  - Prerequisites (Docker, mise, .env)"
             echo "  - Development Runtimes (PHP, Node.js, Python)"
             echo ""
             print_detection_summary
@@ -363,12 +419,22 @@ run_menu() {
                     return 0
                 fi
                 
-                if ! handle_service_action "$service" "$action"; then
-                    break
-                fi
-                echo -n "  Press Enter to continue..."
-                if ! read -r; then
-                    return 0
+                # Validate action range
+                local max_action=7
+                local web_url="${SERVICE_WEB_URL[$service]:-}"
+                [[ -n "$web_url" ]] && max_action=8
+                
+                if [[ "$action" =~ ^[0-9]+$ ]] && ((action >= 0 && action <= max_action)); then
+                    if ! handle_service_action "$service" "$action"; then
+                        break
+                    fi
+                    echo -n "  Press Enter to continue..."
+                    if ! read -r; then
+                        return 0
+                    fi
+                else
+                    print_error "Invalid choice. Use [0-${max_action}] for actions, [0] for back"
+                    sleep 1
                 fi
             done
         elif [[ "$choice" =~ ^[UuAaSsGgIiEeVvQq0]$ ]]; then
@@ -386,7 +452,7 @@ run_menu() {
             fi
             sleep 1
         else
-            print_error "Invalid choice. Use [1-8] for services, [0] for back, or [U/A/S/G/I/V/Q] for actions"
+            print_error "Invalid choice. Use [1-${#SERVICE_ORDER[@]}] for services, [0] for back, or [U/A/S/G/I/V/Q] for actions"
             sleep 2
         fi
     done

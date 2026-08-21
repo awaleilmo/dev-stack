@@ -35,6 +35,7 @@ declare -g PYTHON_VERSION=""
 declare -g HAS_COMPOSER=false
 declare -g COMPOSER_VERSION=""
 declare -g MISSING_DEPS=()
+declare -g HAS_ENV=false
 
 # Check if command exists
 has_cmd() {
@@ -203,12 +204,22 @@ detect_system_deps() {
     fi
 }
 
+# Detect .env file
+detect_env() {
+    if [[ -f ".env" ]]; then
+        HAS_ENV=true
+    else
+        HAS_ENV=false
+    fi
+}
+
 # Run all detections
 detect_all() {
     detect_os
     detect_pm
     detect_docker
     detect_mise
+    detect_env
     detect_php
     detect_node
     detect_python
@@ -233,6 +244,12 @@ print_detection_summary() {
         echo -e "  ${GREEN}✅${NC} mise: $MISE_VERSION"
     else
         echo -e "  ${RED}❌${NC} mise: not installed"
+    fi
+    
+    if [[ "$HAS_ENV" == true ]]; then
+        echo -e "  ${GREEN}✅${NC} .env: configured"
+    else
+        echo -e "  ${YELLOW}⚠️${NC} .env: not found (run 'cp .env.example .env' and edit)"
     fi
     echo ""
     echo -e "${CYAN}Development Runtimes:${NC}"
