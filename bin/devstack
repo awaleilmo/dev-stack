@@ -36,7 +36,6 @@ DEVENV_GUIDE="development-environment-installation.md"
 # Check Docker - fatal, show guide and exit
 if [[ "$HAS_DOCKER" == false ]]; then
     ensure_network &>/dev/null || true
-    local guide_file
     guide_file=$(generate_docker_guide "$DOCKER_GUIDE")
     clear
     print_header "Prerequisites Not Met"
@@ -55,7 +54,6 @@ fi
 
 # Check mise - non-fatal, generate guide but continue
 if [[ "$HAS_MISE" == false ]]; then
-    local guide_file
     guide_file=$(generate_devenv_guide "$DEVENV_GUIDE")
     clear
     print_header "Development Runtime Not Available"
