@@ -16,6 +16,14 @@ if [[ -L "$SYMLINK_TARGET" ]]; then
 fi
 ln -sf "$REPO_ROOT/bin/devstack" "$SYMLINK_TARGET"
 
+# Verify the symlink was created correctly
+if [[ ! -e "$SYMLINK_TARGET" ]]; then
+    echo "ERROR: Symlink creation failed. Target does not exist."
+    echo "  Target: $SYMLINK_TARGET"
+    echo "  Source: $REPO_ROOT/bin/devstack"
+    exit 1
+fi
+
 # Check if ~/.local/bin is in PATH
 if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
     echo ""
@@ -30,5 +38,5 @@ fi
 echo ""
 echo "✅ devstack is now available globally!"
 echo ""
-echo "   Test it by running: devstack"
+echo "   Test it by running: devstack --check"
 echo ""

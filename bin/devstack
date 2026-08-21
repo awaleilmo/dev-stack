@@ -3,8 +3,22 @@
 
 set -uo pipefail
 
+# Save terminal state at start so we can always restore it
+ORIGINAL_STTY="$(stty -g 2>/dev/null || true)"
+
 # Restore terminal sanity on exit/interrupt so a broken state can't persist
-trap 'restore_terminal' EXIT INT TERM
+restore_terminal_state() {
+    if [[ -n "$ORIGINAL_STTY" ]]; then
+        stty "$ORIGINAL_STTY" >/dev/null 2>&1 || true
+    fi
+    stty sane >/dev/null 2>&1 || true
+    stty echo >/dev/null 2>&1 || true
+    stty icanon >/dev/null 2>&1 || true
+    printf '\033[0m' >/dev/null 2>&1 || true
+    printf '\033[?25h' >/dev/null 2>&1 || true
+    printf '\033[r' >/dev/null 2>&1 || true
+}
+trap 'restore_terminal_state' EXIT INT TERM
 
 # Resolve the actual script location, following symlinks
 SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")"
@@ -41,6 +55,7 @@ if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
     echo "Options:"
     echo "  --check, -c    Run system check and exit"
     echo "  --reset, -r    Reset terminal state and exit"
+    echo "  --debug        Show diagnostic info before starting menu"
     echo "  --help, -h     Show this help"
     echo ""
     echo "With no options, starts the interactive menu."
@@ -49,7 +64,7 @@ fi
 
 # Reset terminal mode (useful if terminal got stuck from a previous run)
 if [[ "${1:-}" == "--reset" || "${1:-}" == "-r" ]]; then
-    restore_terminal
+    restore_terminal_state
     echo "Terminal reset. If it still looks broken, run: reset"
     exit 0
 fi
@@ -114,6 +129,16 @@ fi
 
 # Ensure network exists
 ensure_network
+
+# Debug mode - show what's happening
+if [[ "${1:-}" == "--debug" ]]; then
+    echo "DEBUG: Interactive terminal check..."
+    echo "  stdin TTY: $([[ -t 0 ]] && echo yes || echo no)"
+    echo "  stdout TTY: $([[ -t 1 ]] && echo yes || echo no)"
+    echo "  HAS_DOCKER: $HAS_DOCKER"
+    echo "  HAS_MISE: $HAS_MISE"
+    echo "  Starting menu..."
+fi
 
 # Check if we have an interactive terminal before starting menu
 if ! is_interactive; then
