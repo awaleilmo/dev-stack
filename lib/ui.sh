@@ -210,3 +210,107 @@ print_category_badge() {
         *)          echo -e "${GRAY}[?]${NC}" ;;
     esac
 }
+
+# Filter services by category
+filter_services_by_category() {
+    local category="$1"
+    local filtered=()
+    
+    for service in "${SERVICE_ORDER[@]}"; do
+        local svc_category="${SERVICE_CATEGORY[$service]:-tool}"
+        if [[ "$svc_category" == "$category" ]]; then
+            filtered+=("$service")
+        fi
+    done
+    
+    printf '%s\n' "${filtered[@]}"
+}
+
+# Search services by name (partial match)
+search_services() {
+    local query="$1"
+    local query_lower="${query,,}"
+    local results=()
+    
+    for service in "${SERVICE_ORDER[@]}"; do
+        local label="${SERVICE_LABEL[$service],,}"  # lowercase
+        if [[ "$label" == *"$query_lower"* ]]; then
+            results+=("$service")
+        fi
+    done
+    
+    if [[ ${#results[@]} -gt 0 ]]; then
+        printf '%s\n' "${results[@]}"
+    fi
+}
+
+# Get unique categories
+get_unique_categories() {
+    declare -A seen
+    for service in "${SERVICE_ORDER[@]}"; do
+        local cat="${SERVICE_CATEGORY[$service]:-tool}"
+        if [[ -z "${seen[$cat]:-}" ]]; then
+            seen[$cat]=1
+            echo "$cat"
+        fi
+    done
+}
+
+# Activity log storage
+declare -a ACTIVITY_LOG=()
+declare -i LOG_MAX_SIZE=20
+
+# Add entry to activity log
+log_activity() {
+    local message="$1"
+    local timestamp
+    timestamp=$(date '+%H:%M:%S')
+    ACTIVITY_LOG=("${timestamp} - ${message}" "${ACTIVITY_LOG[@]}")
+    
+    # Keep only last LOG_MAX_SIZE entries
+    if [[ ${#ACTIVITY_LOG[@]} -gt $LOG_MAX_SIZE ]]; then
+        ACTIVITY_LOG=("${ACTIVITY_LOG[@]:0:$LOG_MAX_SIZE}")
+    fi
+}
+
+# Display activity log
+show_activity_log() {
+    echo ""
+    echo -e "  ${CYAN}Recent Activity:${NC}"
+    echo "  ──────────────────────────────"
+    
+    if [[ ${#ACTIVITY_LOG[@]} -eq 0 ]]; then
+        echo -e "  ${GRAY}No recent activity${NC}"
+    else
+        local count=0
+        for entry in "${ACTIVITY_LOG[@]}"; do
+            ((count++))
+            echo "  ${GRAY}$entry${NC}"
+            [[ $count -ge 5 ]] && break  # Show only last 5
+        done
+    fi
+    echo ""
+}
+
+# Get resource usage for a service (Phase 3 - Resource Dashboard)
+get_service_resources() {
+    local service="$1"
+    local container="${SERVICE_CONTAINER[$service]}"
+    
+    # Check if container is running
+    if ! docker_safe inspect "$container" &>/dev/null 2>&1; then
+        echo "--/--"
+        return
+    fi
+    
+    # Get CPU and memory usage
+    local cpu mem
+    cpu=$(docker_safe stats --no-stream --format "{{.CPUPerc}}" "$container" 2>/dev/null | tr -d '%.' || echo "?")
+    mem=$(docker_safe stats --no-stream --format "{{.MemPerc}}" "$container" 2>/dev/null | tr -d '%' || echo "?")
+    
+    if [[ "$cpu" != "?" && "$mem" != "?" ]]; then
+        echo "${cpu}%/${mem}%"
+    else
+        echo "--/--"
+    fi
+}

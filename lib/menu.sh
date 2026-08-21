@@ -33,6 +33,61 @@ guide_exists() {
     return 1
 }
 
+# Display filtered services
+display_filtered_services() {
+    local filter_type="$1"  # "category" or "search"
+    local filter_value="$2"
+    
+    echo -e "  ${CYAN}Services${NC} ${GRAY}(${filter_type}: ${filter_value})${NC}"
+    printf "  ${VB} %-3s %-14s %-16s %-8s %-10s %-10s\n" "#" "SERVICE" "CONTAINER" "PORT" "CATEGORY" "STATUS"
+    printf "  ${VB} %-3s %-14s %-16s %-8s %-10s %-10s\n" "---" "--------------" "----------------" "--------" "----------" "----------"
+    
+    local num=1
+    local services_to_display=()
+    
+    if [[ "$filter_type" == "category" ]]; then
+        while IFS= read -r svc; do
+            [[ -n "$svc" ]] && services_to_display+=("$svc")
+        done < <(filter_services_by_category "$filter_value")
+    elif [[ "$filter_type" == "search" ]]; then
+        while IFS= read -r svc; do
+            [[ -n "$svc" ]] && services_to_display+=("$svc")
+        done < <(search_services "$filter_value")
+    fi
+    
+    if [[ ${#services_to_display[@]} -eq 0 ]]; then
+        echo "  ${VB}  ${YELLOW}No services found${NC}"
+    else
+        for service in "${services_to_display[@]}"; do
+            local status
+            status=$(get_service_status "$service")
+            local label="${SERVICE_LABEL[$service]}"
+            local container="${SERVICE_CONTAINER[$service]}"
+            local port="${SERVICE_PORT[$service]}"
+            local icon
+            icon=$(status_icon "$status")
+            local cat_badge
+            cat_badge=$(print_category_badge "$service")
+            
+            printf "  ${VB} %-3s ${icon} %-12s %-16s %-8s %b %-10s\n" \
+                "$num" \
+                "$label" \
+                "$container" \
+                "$port" \
+                "$cat_badge" \
+                "$(status_text "$status")"
+            num=$((num + 1))
+        done
+    fi
+    echo "  ${VB}$(printf '%0.s ' $(seq 1 70))${VB}"
+    echo ""
+    
+    # Show count
+    local count=${#services_to_display[@]}
+    echo -e "  ${GRAY}Showing ${count} service(s)${NC}"
+    echo ""
+}
+
 # Force regenerate all guides (ignores existing files)
 force_regenerate_guides() {
     local guide_dir
@@ -159,33 +214,8 @@ show_main_menu() {
     fi
     echo ""
     
-    # Guide files status (compact)
-    local guide_dir
-    guide_dir="$(pwd)"
-    local docker_guide="$guide_dir/docker-installation.md"
-    local devenv_guide="$guide_dir/development-environment-installation.md"
-    
-    if [[ "$HAS_DOCKER" == false ]] || [[ "$HAS_MISE" == false ]] || [[ "$HAS_ENV" == false ]]; then
-        echo -e "  ${CYAN}Guide Files:${NC}"
-        if guide_exists "$docker_guide"; then
-            echo -e "  ${VB} ${GREEN}✅${NC} docker-installation.md"
-        elif [[ "$HAS_DOCKER" == false ]]; then
-            echo -e "  ${VB} ${RED}❌${NC} docker-installation.md (needs generation)"
-        fi
-        if guide_exists "$devenv_guide"; then
-            echo -e "  ${VB} ${GREEN}✅${NC} development-environment-installation.md"
-        elif [[ "$HAS_MISE" == false ]]; then
-            echo -e "  ${VB} ${RED}❌${NC} development-environment-installation.md (needs generation)"
-        fi
-        if [[ "$HAS_ENV" == false ]]; then
-            echo -e "  ${VB} ${YELLOW}⚠️${NC} .env (run: cp .env.example .env)"
-        fi
-        echo ""
-    fi
-    echo ""
-    
     # Services section - grouped by category
-    echo -e "  ${CYAN}Services${NC}"
+    echo -e "  ${CYAN}Services${NC} ${GRAY}(Press [F] to filter, [S] to search)${NC}"
     printf "  ${VB} %-3s %-14s %-16s %-8s %-10s %-10s\n" "#" "SERVICE" "CONTAINER" "PORT" "CATEGORY" "STATUS"
     printf "  ${VB} %-3s %-14s %-16s %-8s %-10s %-10s\n" "---" "--------------" "----------------" "--------" "----------" "----------"
     
@@ -231,12 +261,13 @@ show_main_menu() {
     echo -e "  ${VB} [I] Install Mise Runtime${NC}   - Cek & buat panduan install mise + PHP/Node/Python"
     echo -e "  ${VB} [E] Install PHP Extensions${NC} - Pasang ekstensi PHP via pecl (butuh PHP aktif)"
     echo -e "  ${VB} [V] Verify System${NC}          - Tampilkan status lengkap sistem & runtime"
+    echo -e "  ${VB} [L] Activity Log${NC}           - Lihat riwayat aktivitas"
     echo -e "  ${VB} [Q] Quit${NC}                   - Keluar dari aplikasi"
     echo ""
     
-    # Quick Actions Bar (always visible at bottom)
-    echo -e "  ${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-    echo -e "  ${CYAN}⚡ Quick Actions:${NC}  ${BOLD}[S]tart All${NC} | ${BOLD}[P]ause All${NC} | ${BOLD}[R]efresh${NC} | ${BOLD}[U]pdate${NC} | ${BOLD}[G]uides${NC} | ${BOLD}[Q]uit${NC}"
+    # Quick Shortcuts Bar (consistent with Actions)
+    echo -e "  ${GRAY}━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "  ${CYAN}⚡ Shortcuts:${NC}  ${BOLD}[A]${NC} Start | ${BOLD}[S]${NC} Stop | ${BOLD}[U]${NC} Update | ${BOLD}[G]${NC} Guides | ${BOLD}[L]og${NC} | ${BOLD}[Q]${NC} Quit"
     echo -e "  ${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
     echo ""
 }
@@ -335,6 +366,7 @@ handle_main_action() {
     
     case "$action" in
         U|u)
+            log_activity "Update images started"
             echo ""
             echo "  ${CYAN}Pulling all images...${NC}"
             echo ""
@@ -354,8 +386,10 @@ handle_main_action() {
             done
             echo ""
             print_success "$updated image(s) updated"
+            log_activity "Updated $updated image(s)"
             ;;
         A|a)
+            log_activity "Start all services initiated"
             echo ""
             echo "  ${CYAN}Starting all services...${NC}"
             echo ""
@@ -375,8 +409,10 @@ handle_main_action() {
             done
             echo ""
             print_success "$started service(s) started"
+            log_activity "Started $started service(s)"
             ;;
         S|s)
+            log_activity "Stop all services initiated"
             echo ""
             echo "  ${CYAN}Stopping all services...${NC}"
             echo ""
@@ -396,6 +432,7 @@ handle_main_action() {
             done
             echo ""
             print_success "$stopped service(s) stopped"
+            log_activity "Stopped $stopped service(s)"
             ;;
         G|g)
             safe_clear
@@ -590,6 +627,15 @@ handle_main_action() {
             echo -n "  Press Enter to continue..."
             read -r || true
             ;;
+        L|l)
+            # Show activity log
+            safe_clear
+            print_header "Activity Log"
+            echo ""
+            show_activity_log
+            echo -n "  Press Enter to continue..."
+            read -r || true
+            ;;
         Q|q)
             return 2
             ;;
@@ -621,6 +667,9 @@ run_menu() {
     while true; do
         show_main_menu
         
+        # Show prompt (simplified)
+        printf "  ${BOLD}Pilih${NC} [1-%d] atau shortcut [A/S/U/G/V/L/Q/F/S]: " "${#SERVICE_ORDER[@]}"
+        
         # Read choice with 300 second timeout
         if ! read -t 300 -r choice; then
             echo ""
@@ -634,20 +683,18 @@ run_menu() {
             continue
         fi
         
-        # Handle quick actions (single character)
-        if [[ "$choice" =~ ^[sSpPrRuUgGqQ0]$ ]]; then
-            local quick_key="${choice,,}"  # lowercase
-            case "$quick_key" in
-                s|S) choice="A" ;;  # Start All
-                p|P) choice="S" ;;  # Stop All (Pause)
-                r|R) 
-                    # Refresh - just show menu again
-                    continue 
-                    ;;
-                u|U) choice="U" ;;
-                g|G) choice="G" ;;
-                q|Q) choice="Q" ;;
-                0) choice="0" ;;
+        # Handle shortcuts (match Actions letters)
+        if [[ "$choice" =~ ^[aAsSuUgGvVlLqQ0]$ ]]; then
+            local lower_choice="${choice,,}"
+            case "$lower_choice" in
+                a) choice="A" ;;  # Start All
+                s) choice="S" ;;  # Stop All
+                u) choice="U" ;;  # Update
+                g) choice="G" ;;  # Guides
+                v) choice="V" ;;  # Verify
+                l) choice="L" ;;  # Log
+                q) choice="Q" ;;  # Quit
+                0) choice="0" ;;  # Back
             esac
             handle_main_action "$choice"
             result=$?
@@ -659,6 +706,63 @@ run_menu() {
                 return 0
             fi
             sleep 1
+            continue
+        fi
+        
+        # Handle filter/search shortcuts
+        if [[ "$choice" =~ ^[fFsS]$ ]]; then
+            local lower_choice="${choice,,}"
+            case "$lower_choice" in
+                f)
+                    # Filter by category
+                    safe_clear
+                    echo -e "${BOLD}${CYAN}Filter by Category${NC}"
+                    echo ""
+                    echo "  Pilih kategori:"
+                    
+                    local cat_num=1
+                    declare -A cat_map
+                    while IFS= read -r cat; do
+                        local cat_name="${CATEGORY_NAME[$cat]:-$cat}"
+                        echo "  ${cat_num}. ${cat_name}"
+                        cat_map[$cat_num]="$cat"
+                        ((cat_num++))
+                    done < <(get_unique_categories)
+                    
+                    echo ""
+                    printf "  ${BOLD}Nomor[${cat_num}]:${NC} "
+                    local cat_choice=""
+                    read -t 30 -r cat_choice || cat_choice=""
+                    
+                    if [[ -n "$cat_choice" ]] && [[ "$cat_choice" =~ ^[0-9]+$ ]] && [[ -n "${cat_map[$cat_choice]:-}" ]]; then
+                        local selected_cat="${cat_map[$cat_choice]}"
+                        display_filtered_services "category" "$selected_cat"
+                        echo -n "  Enter lanjut..."
+                        read -r || true
+                    else
+                        print_error "Invalid category"
+                        sleep 1
+                    fi
+                    ;;
+                s)
+                    # Search by name
+                    safe_clear
+                    echo -e "${BOLD}${CYAN}Search Services${NC}"
+                    echo ""
+                    printf "  ${BOLD}Kata kunci:${NC} "
+                    local search_query=""
+                    read -t 30 -r search_query || search_query=""
+                    
+                    if [[ -n "$search_query" ]]; then
+                        display_filtered_services "search" "$search_query"
+                        echo -n "  Enter lanjut..."
+                        read -r || true
+                    else
+                        print_error "Query kosong"
+                        sleep 1
+                    fi
+                    ;;
+            esac
             continue
         fi
         
