@@ -214,15 +214,15 @@ show_main_menu() {
     fi
     echo ""
     
-    # Services section - grouped by category
+    # Services section - grouped by category (fast render with cached status)
     echo -e "  ${CYAN}Services${NC} ${GRAY}(Press [F] to filter, [S] to search)${NC}"
     printf "  ${VB} %-3s %-14s %-16s %-8s %-10s %-10s\n" "#" "SERVICE" "CONTAINER" "PORT" "CATEGORY" "STATUS"
     printf "  ${VB} %-3s %-14s %-16s %-8s %-10s %-10s\n" "---" "--------------" "----------------" "--------" "----------" "----------"
     
     local num=1
     for service in "${SERVICE_ORDER[@]}"; do
-        local status
-        status=$(get_service_status "$service")
+        # Use cached status (instant, no docker call)
+        local status="${SERVICE_STATUS_CACHE[$service]:-checking}"
         local label="${SERVICE_LABEL[$service]}"
         local container="${SERVICE_CONTAINER[$service]}"
         local port="${SERVICE_PORT[$service]}"
@@ -230,7 +230,6 @@ show_main_menu() {
         icon=$(status_icon "$status")
         local cat_badge
         cat_badge=$(print_category_badge "$service")
-        local category="${SERVICE_CATEGORY[$service]:-tool}"
         
         printf "  ${VB} %-3s ${icon} %-12s %-16s %-8s %b %-10s\n" \
             "$num" \
@@ -244,12 +243,12 @@ show_main_menu() {
     echo "  ${VB}$(printf '%0.s ' $(seq 1 70))${VB}"
     echo ""
     
-    # Service summary
+    # Service summary (using cached counts)
     local running stopped not_installed
     running=$(count_services_by_status "running")
     stopped=$(count_services_by_status "stopped")
     not_installed=$(count_services_by_status "not-installed")
-    echo -e "  ${GRAY}Summary: ${running} running, ${stopped} stopped, ${not_installed} not installed${NC}"
+    echo -e "  ${GRAY}Summary: ${running} running, ${stopped} stopped, ${not_installed} not installed | Cache: ${CACHE_TTL}s${NC}"
     echo ""
     
     # Actions section
@@ -266,9 +265,9 @@ show_main_menu() {
     echo ""
     
     # Quick Shortcuts Bar (consistent with Actions)
-    echo -e "  ${GRAY}━━━━━━━━━━━���━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "  ${GRAY}----------------------------------------------------------${NC}"
     echo -e "  ${CYAN}⚡ Shortcuts:${NC}  ${BOLD}[A]${NC} Start | ${BOLD}[S]${NC} Stop | ${BOLD}[U]${NC} Update | ${BOLD}[G]${NC} Guides | ${BOLD}[L]og${NC} | ${BOLD}[Q]${NC} Quit"
-    echo -e "  ${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "  ${GRAY}----------------------------------------------------------${NC}"
     echo ""
 }
 
@@ -664,18 +663,35 @@ run_menu() {
         return 1
     fi
     
+    # Start background cache refresh loop
+    _start_cache_refresh &
+    local bg_pid=$!
+    trap "_kill_cache_refresh $bg_pid" EXIT
+    
+    local remaining=300
+    local need_redraw=true
+    
     while true; do
-        show_main_menu
+        # Only redraw menu when needed (not every second)
+        if [[ "$need_redraw" == true ]]; then
+            show_main_menu
+            need_redraw=false
+        fi
         
-        # Show prompt (simplified)
-        printf "  ${BOLD}Pilih${NC} [1-%d] atau shortcut [A/S/U/G/V/L/Q/F/S]: " "${#SERVICE_ORDER[@]}"
+        # Update countdown in place (no full redraw)
+        printf "\r  ${BOLD}Pilih${NC} [1-%d] / ${BOLD}Shortcut${NC} [A/S/U/G/V/L/Q]: ${GRAY}[%ds]${NC} " "${#SERVICE_ORDER[@]}" "$remaining"
         
-        # Read choice with 300 second timeout
-        if ! read -t 300 -r choice; then
-            echo ""
-            echo -e "  ${CYAN}No input for 5 minutes. Goodbye!${NC}"
-            echo ""
-            return 0
+        # Read choice with timeout
+        local choice=""
+        if ! read -t 1 -r choice; then
+            ((remaining--))
+            if [[ $remaining -le 0 ]]; then
+                echo ""
+                echo -e "  ${CYAN}No input for 5 minutes. Goodbye!${NC}"
+                echo ""
+                return 0
+            fi
+            continue
         fi
         
         # Handle empty input
@@ -699,13 +715,16 @@ run_menu() {
             handle_main_action "$choice"
             result=$?
             if [[ $result -eq 2 ]]; then
-                safe_clear
                 echo ""
                 echo -e "  ${GREEN}Goodbye!${NC}"
                 echo ""
                 return 0
             fi
-            sleep 1
+            # Force redraw after action
+            need_redraw=true
+            # Refresh cache after action
+            refresh_all_statuses
+            sleep 0.3
             continue
         fi
         
@@ -813,4 +832,21 @@ run_menu() {
             sleep 2
         fi
     done
+}
+
+# Background cache refresh function (silent)
+_cache_refresh_loop() {
+    while true; do
+        sleep 4
+        load_all_statuses >/dev/null 2>&1
+    done
+}
+
+_kill_cache_refresh() {
+    local pid="$1"
+    kill "$pid" 2>/dev/null || true
+}
+
+_start_cache_refresh() {
+    _cache_refresh_loop >/dev/null 2>&1 &
 }

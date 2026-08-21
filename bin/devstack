@@ -149,6 +149,9 @@ fi
 # Ensure network exists
 ensure_network
 
+# Load all statuses upfront (single docker call)
+load_all_statuses
+
 # Debug mode - show what's happening
 if [[ "${1:-}" == "--debug" ]]; then
     echo "DEBUG: Interactive terminal check..."

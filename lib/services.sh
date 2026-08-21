@@ -152,27 +152,95 @@ ensure_network() {
     fi
 }
 
-# Check service status
+# Service status cache (Performance optimization)
+declare -A SERVICE_STATUS_CACHE=()
+declare -A SERVICE_STATUS_TIME=()
+CACHE_TTL=5  # Cache valid for 5 seconds
+
+# Initialize cache on source
+_init_status_cache() {
+    local now=$(date +%s)
+    for service in "${SERVICE_ORDER[@]}"; do
+        SERVICE_STATUS_CACHE[$service]="checking"
+        SERVICE_STATUS_TIME[$service]=$now
+    done
+}
+_init_status_cache
+
+# Check service status (instant from cache, refreshes in background)
 get_service_status() {
     local service="$1"
-    local container="${SERVICE_CONTAINER[$service]}"
     
-    # Must check OUTPUT is non-empty, not just exit code (docker returns 0 even when no match)
-    local running_id
-    running_id=$(docker_safe ps -q -f "name=${container}" 2>/dev/null)
-    if [[ -n "$running_id" ]]; then
-        echo "running"
-        return
+    # Return cached value immediately (no subshell!)
+    echo "${SERVICE_STATUS_CACHE[$service]:-checking}"
+    
+    # Background refresh if cache is stale
+    local now=$(date +%s)
+    local cache_time=${SERVICE_STATUS_TIME[$service]:-0}
+    
+    if [[ $((now - cache_time)) -ge $CACHE_TTL ]]; then
+        (
+            local container="${SERVICE_CONTAINER[$service]}"
+            local output
+            output=$(docker_safe ps -a --filter "name=^${container}$" --format "{{.Status}}" 2>/dev/null)
+            local status="not-installed"
+            if [[ -n "$output" ]]; then
+                if [[ "$output" == *"Up"* ]] || [[ "$output" == *"running"* ]]; then
+                    status="running"
+                else
+                    status="stopped"
+                fi
+            fi
+            SERVICE_STATUS_CACHE[$service]="$status"
+            SERVICE_STATUS_TIME[$service]=$(date +%s)
+        ) &
     fi
+}
+
+# Force refresh all statuses synchronously (use after operations)
+refresh_all_statuses() {
+    local now=$(date +%s)
+    for service in "${SERVICE_ORDER[@]}"; do
+        local container="${SERVICE_CONTAINER[$service]}"
+        local output
+        output=$(docker_safe ps -a --filter "name=^${container}$" --format "{{.Status}}" 2>/dev/null)
+        local status="not-installed"
+        if [[ -n "$output" ]]; then
+            if [[ "$output" == *"Up"* ]] || [[ "$output" == *"running"* ]]; then
+                status="running"
+            else
+                status="stopped"
+            fi
+        fi
+        SERVICE_STATUS_CACHE[$service]="$status"
+        SERVICE_STATUS_TIME[$service]=$now
+    done
+}
+
+# Get all statuses in one batch call (for initial load)
+load_all_statuses() {
+    local output
+    output=$(docker_safe ps -a --format "{{.Names}}|{{.Status}}" 2>/dev/null)
+    local now=$(date +%s)
     
-    local stopped_id
-    stopped_id=$(docker_safe ps -aq -f "name=${container}" 2>/dev/null)
-    if [[ -n "$stopped_id" ]]; then
-        echo "stopped"
-        return
-    fi
-    
-    echo "not-installed"
+    for service in "${SERVICE_ORDER[@]}"; do
+        local container="${SERVICE_CONTAINER[$service]}"
+        local line
+        line=$(echo "$output" | grep "^${container}|" | head -1)
+        
+        local status="not-installed"
+        if [[ -n "$line" ]]; then
+            local status_text="${line#*|}"
+            if [[ "$status_text" == *"Up"* ]] || [[ "$status_text" == *"running"* ]]; then
+                status="running"
+            else
+                status="stopped"
+            fi
+        fi
+        
+        SERVICE_STATUS_CACHE[$service]="$status"
+        SERVICE_STATUS_TIME[$service]=$now
+    done
 }
 
 # Check if image has update available
