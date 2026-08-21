@@ -61,7 +61,10 @@ dev-stack/
 │   ├── rabbitmq/        # Message broker (Laravel Queues, Celery)
 │   ├── meilisearch/     # Full-text search engine
 │   ├── minio/           # S3 storage
-│   └── portainer/       # Docker WebUI
+│   ├── portainer/       # Docker WebUI
+│   ├── prometheus/      # Metrics collection
+│   ├── grafana/         # Metrics visualization
+│   └── jaeger/          # Distributed tracing
 └── docs/
     └── CLI-DESIGN.md     # CLI design documentation
 ```
@@ -89,6 +92,9 @@ devstack
 | 8 | Meilisearch | meilisearch-dev | getmeili/meilisearch:latest | 7700 |
 | 9 | MinIO | minio-dev | minio/minio:latest | 9001 |
 | 10 | Portainer | portainer-dev | portainer/portainer-ce:latest | 9000 |
+| 11 | Prometheus | prometheus-dev | prom/prometheus:latest | 9090 |
+| 12 | Grafana | grafana-dev | grafana/grafana:latest | 3000 |
+| 13 | Jaeger | jaeger-dev | jaegertracing/all-in-one:latest | 16686 |
 
 ## 🌐 Web Interfaces
 
@@ -98,6 +104,9 @@ devstack
 - **Meilisearch Dashboard**: http://localhost:7700
 - **Portainer (Docker UI)**: http://localhost:9000 (admin/admin)
 - **MinIO Console (S3 Storage)**: http://localhost:9002 (admin/password123)
+- **Prometheus**: http://localhost:9090
+- **Grafana**: http://localhost:3000 (admin/admin)
+- **Jaeger**: http://localhost:16686
 
 ## 💻 Development Runtimes (via mise)
 

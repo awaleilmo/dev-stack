@@ -21,8 +21,6 @@ services:
       - GF_SERVER_ROOT_URL=${GRAFANA_ROOT_URL:-http://localhost:3000}
     ports:
       - "${GRAFANA_PORT:-3000}:3000"
-    depends_on:
-      - prometheus
 
 volumes:
   grafana_data:
